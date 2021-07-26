@@ -1,0 +1,21 @@
+doctype html
+html
+  head
+    title=page_title
+    meta(charset="utf-8")
+    
+    block css
+      link(rel="stylesheet" href="css/app.css")
+    block scripts
+      script(src="js/empty.js")
+    body
+      block head
+        nav
+          ul(id="nav_link_block")
+            li
+              a(href="/" class="nav_link") Home
+            li
+              a(href="/bar" class="nav_link") V-Bar
+      block content
+      block footer
+        p(id="footer_content") &copy 2021 - ClubReRem
