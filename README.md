@@ -9,7 +9,7 @@ This project uses Docker, you will need Docker installed to properly run and wor
 See https://www.docker.com/products/docker-desktop for more details.
 
 To run, you should type *docker-compose up*.
-To build, you should type *docker-compose -d --build*.
+To build, you should type *docker-compose up -d --build*.
 
 ## Contributing
 This project is intended as a solo project for now, but if you want to commit feel free to contact me or send an issue.
