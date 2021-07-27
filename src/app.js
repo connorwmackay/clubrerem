@@ -2,8 +2,10 @@ const express = require('express');
 const app = express();
 
 app.set('view engine', 'pug');
-app.set('views', './views');
-app.use(express.static('public'))
+app.set('views', 'src/views');
+app.use(express.static('./src/public'))
+
+const sequelize = require('./db');
 
 const indexRouter = require('./routes/index');
 const barRouter = require('./routes/bar');
