@@ -2,3 +2,11 @@ extends layout.pug
 
 block content
   h1(id="page_head")=page_head
+  form(action="/login", method="post"  autocomplete="off" id="signup-form")
+    label(for="username" id="username_label") Username 
+    input(type="name" name="username" id="username_input" required)
+
+    label(for="password" id="password_label") Password
+    input(type="password" name="password" id="password_input" required)
+
+    input(type="submit" value="Log In")

@@ -3,9 +3,12 @@ const app = express();
 
 app.set('view engine', 'pug');
 app.set('views', 'src/views');
-app.use(express.static('./src/public'))
+app.use(express.static('./src/public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const sequelize = require('./db');
+const UsersModel = require('./models/users');
 
 const indexRouter = require('./routes/index');
 const barRouter = require('./routes/bar');
