@@ -16,9 +16,6 @@ function isPasswordCorrect(password, passwordHash, salt) {
 
     let hashHex = hash.toString(CryptoJS.enc.hex);
 
-    console.log(passwordHash);
-    console.log(hashHex);
-
     if (hashHex === passwordHash) {
         return true;
     } else {
@@ -26,4 +23,6 @@ function isPasswordCorrect(password, passwordHash, salt) {
     }
 }
 
-module.exports = { hashPassword, isPasswordCorrect };
+const hashDivider = '|%|';
+
+module.exports = { hashPassword, isPasswordCorrect, hashDivider};
