@@ -1,4 +1,5 @@
 const { Sequelize } = require('sequelize');
+const User = require('./models/user');
 
 const sequelize = new Sequelize('postgres://postgres:postgres@postgres:5432/postgres');
 

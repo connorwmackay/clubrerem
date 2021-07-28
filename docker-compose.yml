@@ -4,6 +4,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
+        entrypoint: ["/bin/bash", "./src/entrypoint.sh"]
         volumes:
             - ./src:/usr/src/app/src
             - logvolume0:/var/log

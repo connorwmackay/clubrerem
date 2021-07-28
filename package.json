@@ -2,7 +2,7 @@
   "name": "clubrerem",
   "version": "1.0.0",
   "description": "A club on the edge of the internet",
-  "main": "app.js",
+  "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon -L src/app.js"
