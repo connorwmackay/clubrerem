@@ -70,3 +70,27 @@ body {
 #main_content {
   margin-left: 4rem;
 }
+
+#signup-form {
+  box-sizing: border-box;
+  width: 5rem;
+}
+
+#signup-form input {
+  box-sizing: border-box;
+  padding-top: .3rem;
+  padding-bottom: .3rem;
+  margin-bottom: 0.5rem;
+  width: 15rem;
+  border: 0.2rem solid #6D6A75;
+  background-color: #9f99b1;
+  color: rgb(201, 199, 199);
+  font-weight: bold;
+}
+
+#signup-form input[type="submit"] {
+  background-color: #6D6A75;
+  color: #BFBDC1;
+  font-weight: bold;
+  border-radius: 1rem;
+}
