@@ -15,10 +15,10 @@ module.exports = (sequelize, DataTypes) => {
   };
   User.init({
     id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
+      allowNull: false,
       autoIncrement: true,
-      notNull: false
+      primaryKey: true,
+      type: DataTypes.INTEGER
     },
     username: {
       type: DataTypes.STRING,
@@ -31,6 +31,11 @@ module.exports = (sequelize, DataTypes) => {
     password_hash: {
       type: DataTypes.STRING,
       notNull: false
+    },
+    profile: {
+      type: DataTypes.STRING,
+      notNull: false,
+      defaultValue: "/images/defaultProfile.png"
     }
   }, {
     sequelize,
