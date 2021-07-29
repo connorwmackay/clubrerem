@@ -26,13 +26,16 @@ router.post('/', (req, res) => {
         await db.User.create({username: username, email: email, password_hash: passwordSalt})
         console.log("User ID: ", newUser.id);
         res.status(201);
-        res.send("POST request successful");
+        res.redirect("/");
       } catch(err) {
         console.log("Could not create user: ", err);
         res.status(500);
-        res.send("Post request unsuccessful.");
+        res.send("Post request unsuccessful."); // TODO: Redirect to a 500 page route i.e. /error-505
       }
     })();
+  } else {
+    res.status(500);
+    res.send("Post request unsuccessful."); // TODO: Redirect to a 500 page route i.e. /error-505
   }
 });
 
