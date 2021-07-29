@@ -8,7 +8,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const sequelize = require('./db');
-const UsersModel = require('./models/users');
 
 const indexRouter = require('./routes/index');
 const barRouter = require('./routes/bar');
