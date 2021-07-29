@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    username: {
+    username: { // TODO: Make this column unique
       type: DataTypes.STRING,
       notNull: false
     },
