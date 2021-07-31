@@ -1,6 +1,8 @@
 # clubrerem
 A club on the edge of the internet.
 
+(src/images/screenshot.png)
+
 ## About
 This project is a social platform that will be built under the look and feel of a nightclub.
 [Trello](https://trello.com/b/L4cNPRYd/club-rerem)
