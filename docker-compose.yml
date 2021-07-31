@@ -1,10 +1,12 @@
-version: "3.9"
+version: "3"
 services:
     web:
         build:
             context: .
             dockerfile: Dockerfile
         entrypoint: ["/bin/bash", "./src/entrypoint.sh"]
+        environment: 
+            - COOKIE_SECRET=HWdS9%Oz4MSn^FevmhXg3&k&p1ykE
         volumes:
             - ./src:/usr/src/app/src
             - logvolume0:/var/log

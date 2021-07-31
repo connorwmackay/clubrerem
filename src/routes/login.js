@@ -4,42 +4,51 @@ const { hashPassword, isPasswordCorrect, hashDivider } = require('../scripts/pas
 const db = require('../models/index');
 
 router.get('/', (req, res) => {
-  res.render('login', {page_title: 'Club ReRem - Login', page_head: 'Login'});
+    if (!req.session.userId) {
+        res.render('login', {page_title: 'Club ReRem - Login', page_head: 'Login'});
+    } else {
+        res.redirect('/');
+    }
 });
 
 router.post('/', (req, res) => {
-  const username  = req.body.username;
-  const password  = req.body.password;
+    const username  = req.body.username;
+    const password  = req.body.password;
 
-  if (username != null && password != null) {
+    if (username != null && password != null) {
+        if (!req.session.userId) {
+            const user = (async() => {return await db.User.findOne({
+                where: {
+                username: username
+                }
+            });})().then(user => {
+                const hashSplit = user.dataValues.password_hash.split(hashDivider);
+                const salt = hashSplit[1];
 
-    // GET data from database
-    const user = (async() => {return await db.User.findOne({
-      where: {
-        username: username // TODO: Add new migration making username column unique
-      }
-    });})().then(user => {
-      // console.log("User: ", user);
+                if (isPasswordCorrect(password, hashSplit[0], salt)) {
+                    req.session.userId = username;
+                    req.session.save();
+                    console.log("Session User ID: ", req.session.userId);
 
-      const hashSplit = user.dataValues.password_hash.split(hashDivider);
-      // console.log(hashSplit);
-      const salt = hashSplit[1];
-
-      if (isPasswordCorrect(password, hashSplit[0], salt)) {
-        res.status(201);
-        res.redirect('/');
-      } else {
-        // Password incorrect.
+                    res.status(201);
+                    res.redirect('/');
+                } else {
+                    res.status(500);
+                    res.redirect('/error');
+                }
+            }).catch((err) => {
+                console.log(err);
+                res.status(500);
+                res.redirect('/error');
+            });
+        } else {
+            res.status(201);
+            res.redirect('/');
+        }
+    } else {
         res.status(500);
-        res.send("Incorrect password.");
-      }
-    }).catch((err) => {
-      console.log(err);
-      res.status(500);
-      res.send("User could not be found.");
-    });
-  }
-  
+        res.redirect('/error');
+    }
 });
 
 module.exports = router;

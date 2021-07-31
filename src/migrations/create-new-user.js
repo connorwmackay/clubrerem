@@ -17,19 +17,20 @@ module.exports = {
       },
       username: {
         type: Sequelize.STRING,
-        allowNull: false
+        unique: true,
+        notNull: true
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: false
+        notNull: true
       },
       password_hash: {
         type: Sequelize.STRING,
-        allowNull: false
+        notNull: true
       },
       profile: {
-        type: DataTypes.STRING,
-        notNull: false,
+        type: Sequelize.STRING,
+        notNull: true,
         defaultValue: "/images/defaultProfile.png"
       },
       createdAt: {

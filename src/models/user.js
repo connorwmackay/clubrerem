@@ -22,19 +22,20 @@ module.exports = (sequelize, DataTypes) => {
     },
     username: { // TODO: Make this column unique
       type: DataTypes.STRING,
-      notNull: false
+      unique: true,
+      notNull: true
     },
     email: {
       type: DataTypes.STRING,
-      notNull: false
+      notNull: true
     },
     password_hash: {
       type: DataTypes.STRING,
-      notNull: false
+      notNull: true
     },
     profile: {
       type: DataTypes.STRING,
-      notNull: false,
+      notNull: true,
       defaultValue: "/images/defaultProfile.png"
     }
   }, {

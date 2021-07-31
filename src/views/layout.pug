@@ -24,10 +24,16 @@ html
             li
               a(href='/room' class="nav_link") Private Room
             // Right-aligned
-            li
-              a(href="/signup" class="nav_link_right") Sign Up
-            li
-              a(href='/login' class="nav_link_right") Login
+            if loggedIn 
+              li
+                a(href='/logout' class="nav_link_right") Logout
+              li
+                a(href="/" class="nav_link_right")=username
+            else
+              li
+                a(href="/signup" class="nav_link_right") Sign Up
+              li
+                a(href='/login' class="nav_link_right") Login
       section(id="main_content")
         block content
       block footer
