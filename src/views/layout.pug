@@ -10,9 +10,9 @@ html
       link(href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet")
 
     block css
-      link(rel="stylesheet" href="css/app.css")
+      link(rel="stylesheet" href="/css/app.css" type="text/css")
     block scripts
-      script(src="js/empty.js")
+      script(src="/js/empty.js")
     body
       block head
         nav
@@ -37,4 +37,5 @@ html
       section(id="main_content")
         block content
       block footer
+        // Add /terms-and-conditions link and /privacy-policy link
         p(id="footer_content") &copy 2021 - Club ReRem

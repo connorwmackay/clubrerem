@@ -1,0 +1,14 @@
+extends layout.pug
+
+block content
+  h1(id="page_head")=page_head
+  form(action="/room/create" method="POST" autocomplete="off" id="signup-form")
+    label(for="room_name" id="room_name_label") Name
+    input(type="text" name="room_name" id="room_name_input")
+
+    // Add JavaScript / Server-side code for auto-completing users
+    label(for="room_invite_user" id="room_invite_user_label") Invite User(s)
+    input(name="room_invite_user" id="room_name_invite_user")
+    button(id="room_invite_btn" type="button") Invite
+
+    input(type="submit" value="Create")

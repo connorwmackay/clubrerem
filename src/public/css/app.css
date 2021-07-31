@@ -15,6 +15,7 @@ body {
 
 #page_head {
   font-size: 32px;
+  text-align: center;
 }
 
 #nav_link_block {
@@ -67,13 +68,12 @@ body {
   width: 100%;
 }
 
-#main_content {
-  margin-left: 4rem;
-}
-
 #signup-form {
   box-sizing: border-box;
-  width: 5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 13.5rem;
 }
 
 #signup-form input {
@@ -81,7 +81,7 @@ body {
   padding-top: .3rem;
   padding-bottom: .3rem;
   margin-bottom: 0.5rem;
-  width: 15rem;
+  width: 100%;
   border: 0.2rem solid #6D6A75;
   background-color: #9f99b1;
   color: rgb(201, 199, 199);
@@ -93,4 +93,14 @@ body {
   color: #BFBDC1;
   font-weight: bold;
   border-radius: 1rem;
+}
+
+#room_invite_btn {
+  background-color: #6D6A75;
+  border: none;
+  color: #BFBDC1;
+  font-weight: bold;
+  height: 1.5rem;
+  width: 25%;
+  margin-bottom: 1rem;
 }
