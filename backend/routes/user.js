@@ -21,11 +21,11 @@ router.post('/validate', (req, res) => {
                     res.status(201);
                     res.json({isValidLogin: true, status: "Successfully logged in as " + username});
                 } else {
-                    res.status(500);
+                    res.status(201);
                     res.send({isValidLogin: false, status: "Incorrect login details"});
                 }
             } else {
-                res.status(500);
+                res.status(201);
                 res.json({isValidLogin: false, status: "Incorrect login details"});
             }
 
@@ -35,7 +35,7 @@ router.post('/validate', (req, res) => {
             res.json({isValidLogin: false, status: "Incorrect login details"});
         });
     } else {
-        res.status(500);
+        res.status(201);
         res.json({isValidLogin: false, status: "Incorrect login details"});
     }
 });

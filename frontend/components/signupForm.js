@@ -9,9 +9,18 @@ export default function SignUpForm() {
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordCheck, setPasswordCheck] = useState('');
 
-    function handleSubmit() {
+    function handleSubmit(e) {
+        if (password != passwordCheck) {
+            setStatus("Passwords do not match");
+        } else if (username == "username") {
+            setStatus("Username is already taken");
+        } else {
+            setStatus("");
+        }
 
+        e.preventDefault();
     }
 
     function handleUsernameChange(e) {
@@ -21,6 +30,10 @@ export default function SignUpForm() {
     function handlePasswordChange(e) {
         setPassword(e.target.value);
     }
+    function handlePasswordCheckChange(e) {
+        setPasswordCheck(e.target.value);
+    }
+
 
     function handleEmailChange(e) {
         setEmail(e.target.value);
@@ -37,6 +50,9 @@ export default function SignUpForm() {
 
             <label htmlFor="password" className={styles.formLabel}>Password</label>
             <input type="password" name="password" id="password" value={password} className={styles.formInput} onChange={handlePasswordChange} required />
+
+            <label htmlFor="passwordCheck" className={styles.formLabel}>Password Check</label>
+            <input type="password" name="passwordCheck" id="passwordCheck" value={passwordCheck} className={styles.formInput} onChange={handlePasswordCheckChange} required />
 
             <button type="submit" className={styles.formButton}>Sign Up</button>
 

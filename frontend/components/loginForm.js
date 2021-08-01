@@ -20,7 +20,7 @@ class LoginForm extends React.Component {
     }
 
     handleSubmit(event) {
-        const data = {
+        let data = {
             username: this.state.username,
             password: this.state.password
         };
@@ -38,7 +38,7 @@ class LoginForm extends React.Component {
             if (data.isValidLogin) {
                 this.setState({username: this.state.username, password: this.state.password, status: data.status});
             } else {
-                this.setState({username: this.state.username, password: this.state.password, state: data.status});
+                this.setState({username: this.state.username, password: this.state.password, status: data.status});
             }
 
             console.log("Success: ", data);
