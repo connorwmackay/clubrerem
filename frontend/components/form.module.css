@@ -1,0 +1,25 @@
+.compForm {
+    display: block;
+    box-sizing: border-box;
+    width: 15rem;
+    margin-left: 5rem;
+}
+
+.formLabel {
+    margin-bottom: 1rem;
+}
+
+.formInput {
+    font-size: 14px;
+    height: 2rem;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.formButton {
+    font-size: 14px;
+    color: white;
+    background-color: black;
+    height: 2rem;
+    width: 100%;
+}

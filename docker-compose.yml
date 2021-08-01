@@ -1,21 +1,36 @@
 version: "3"
 services:
-    web:
+    backend:
         build:
-            context: .
+            context: ./backend
             dockerfile: Dockerfile
-        entrypoint: ["/bin/bash", "./src/entrypoint.sh"]
+        command: npm start
         environment: 
             - COOKIE_SECRET=HWdS9%Oz4MSn^FevmhXg3&k&p1ykE
         volumes:
-            - ./src:/usr/src/app/src
+            - ./backend:/usr/src/app/backend
             - logvolume0:/var/log
+        links:
+            - redis
+        ports:
+            - "3001:3001"
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        command: npm run dev
+        volumes:
+            - ./frontend:/usr/src/app/frontend
+        depends_on:
+            - backend
         links:
             - redis
         ports:
             - "3000:3000"
     redis:
         image: "redis:alpine"
+        logging:
+            driver: "none"
     postgres:
         image: postgres
         restart: always
@@ -24,9 +39,7 @@ services:
             - POSTGRES_PASSWORD=postgres
             - PGDATA=/data/postgres
         logging:
-            options:
-                max-size: 10m
-                max-file: "3"
+            driver: "none"
         ports:
             - '5438:5432'
         volumes:
@@ -35,6 +48,8 @@ services:
         container_name: pgadmin4_container
         image: dpage/pgadmin4
         restart: always
+        logging:
+            driver: "none"
         environment:
             PGADMIN_DEFAULT_EMAIL: admin@admin.com
             PGADMIN_DEFAULT_PASSWORD: root
