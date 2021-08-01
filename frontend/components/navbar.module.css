@@ -1,0 +1,32 @@
+
+.navbar {
+    box-sizing: border-box;
+    font-size: 18px;
+    width: 100%;
+    padding-top: 1.25rem;
+    padding-bottom: 2.3rem;
+    background-color: black;
+    margin-bottom: 2rem;
+    color: gray;
+}
+
+.navbarNav {
+    list-style-type: none;
+    float: left;
+    margin: 0;
+    padding: 0;
+}
+
+.navbarItem {
+    float: left;
+    margin-left: 2rem;
+}
+
+.navbarLink, .navbarLink:visited {
+    color: gray;
+}
+
+.navbarItemRight {
+    float: right;
+    margin-right: 2rem;
+}
