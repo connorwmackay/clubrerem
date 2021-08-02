@@ -16,9 +16,30 @@ export default function SignUpForm() {
             setStatus("Passwords do not match");
         } else if (username == "username") {
             setStatus("Username is already taken");
+        } else if (password.length < 8) {
+            setStatus("Password too short.");
         } else {
-            setStatus("");
+            const data = {
+                email_addr: email,
+                username: username,
+                password: password
+            };
+
+            fetch('http://localhost:3001/user/create', {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                setStatus(data.status);
+            });
         }
+
+
 
         e.preventDefault();
     }
@@ -41,6 +62,8 @@ export default function SignUpForm() {
 
     return (
         <form onSubmit={handleSubmit} className={styles.compForm} autoComplete="off">
+
+            <h3>Sign Up</h3>
 
             <label htmlFor="email" className={styles.formLabel}>Email</label>
             <input type="email" name="email" id="email" value={email} className={styles.formInput} onChange={handleEmailChange} required/>
