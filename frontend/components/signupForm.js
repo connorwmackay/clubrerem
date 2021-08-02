@@ -9,9 +9,39 @@ export default function SignUpForm() {
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordCheck, setPasswordCheck] = useState('');
 
-    function handleSubmit() {
+    function handleSubmit(e) {
+        if (password != passwordCheck) {
+            setStatus("Passwords do not match");
+        } else if (username == "username") {
+            setStatus("Username is already taken");
+        } else if (password.length < 8) {
+            setStatus("Password too short.");
+        } else {
+            const data = {
+                email_addr: email,
+                username: username,
+                password: password
+            };
 
+            fetch('http://localhost:3001/user/create', {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                setStatus(data.status);
+            });
+        }
+
+
+
+        e.preventDefault();
     }
 
     function handleUsernameChange(e) {
@@ -21,6 +51,10 @@ export default function SignUpForm() {
     function handlePasswordChange(e) {
         setPassword(e.target.value);
     }
+    function handlePasswordCheckChange(e) {
+        setPasswordCheck(e.target.value);
+    }
+
 
     function handleEmailChange(e) {
         setEmail(e.target.value);
@@ -28,6 +62,8 @@ export default function SignUpForm() {
 
     return (
         <form onSubmit={handleSubmit} className={styles.compForm} autoComplete="off">
+
+            <h3>Sign Up</h3>
 
             <label htmlFor="email" className={styles.formLabel}>Email</label>
             <input type="email" name="email" id="email" value={email} className={styles.formInput} onChange={handleEmailChange} required/>
@@ -37,6 +73,9 @@ export default function SignUpForm() {
 
             <label htmlFor="password" className={styles.formLabel}>Password</label>
             <input type="password" name="password" id="password" value={password} className={styles.formInput} onChange={handlePasswordChange} required />
+
+            <label htmlFor="passwordCheck" className={styles.formLabel}>Password Check</label>
+            <input type="password" name="passwordCheck" id="passwordCheck" value={passwordCheck} className={styles.formInput} onChange={handlePasswordCheckChange} required />
 
             <button type="submit" className={styles.formButton}>Sign Up</button>
 

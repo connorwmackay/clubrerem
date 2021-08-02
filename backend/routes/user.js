@@ -21,11 +21,11 @@ router.post('/validate', (req, res) => {
                     res.status(201);
                     res.json({isValidLogin: true, status: "Successfully logged in as " + username});
                 } else {
-                    res.status(500);
+                    res.status(201);
                     res.send({isValidLogin: false, status: "Incorrect login details"});
                 }
             } else {
-                res.status(500);
+                res.status(201);
                 res.json({isValidLogin: false, status: "Incorrect login details"});
             }
 
@@ -35,7 +35,7 @@ router.post('/validate', (req, res) => {
             res.json({isValidLogin: false, status: "Incorrect login details"});
         });
     } else {
-        res.status(500);
+        res.status(201);
         res.json({isValidLogin: false, status: "Incorrect login details"});
     }
 });
@@ -49,11 +49,8 @@ router.post('/create', (req, res) => {
         const hashArray = hashPassword(password);
         const passwordSalt = hashArray[0] + hashDivider + hashArray[1];
         db.User.create({username: username, email: email, password_hash: passwordSalt}).then(() => {
-            req.session.userId = username;
-            req.session.save();
-
             res.status(201);
-            res.json({isSuccessful: true, status: "Created new user '" + username + "'"});
+            res.json({isSuccessful: true, username: username, status: "Created new user '" + username + "'"});
         }).catch((err) =>{
             console.log("Could not create user: ", err);
             res.status(500);
