@@ -63,7 +63,7 @@ export default function SignUpForm() {
     return (
         <form onSubmit={handleSubmit} className={styles.compForm} autoComplete="off">
 
-            <h3>Sign Up</h3>
+            <h2 className={styles.formHeader}>Sign Up</h2>
 
             <label htmlFor="email" className={styles.formLabel}>Email</label>
             <input type="email" name="email" id="email" value={email} className={styles.formInput} onChange={handleEmailChange} required/>
