@@ -43,7 +43,7 @@ export default function LoginForm() {
 
     return (
         <form method="POST" onSubmit={handleSubmit} className={styles.compForm} autoComplete="off">
-            <h3>Log In</h3>
+            <h2 className={styles.formHeader}>Log In</h2>
 
             <label htmlFor="username" className={styles.formLabel}>Username</label>
             <input type="text" name="username" id="username" value={username} className={styles.formInput} onChange={handleUsernameChange} required/>

@@ -1,7 +1,7 @@
 # clubrerem
 A club on the edge of the internet.
 
-![Screenshot](src/public/images/screenshot.png)
+![Screenshot](./frontend/public/screenshot.png)
 
 ## About
 This project is a social platform that will be built under the look and feel of a nightclub.

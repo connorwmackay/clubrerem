@@ -18,11 +18,11 @@ export default function Navbar() {
                     <Link href="/" className={styles.navbarLink}>Home</Link>
                 </li>
 
-                <li className={styles.navbarItem}>
-                    <Link href="/login" className={styles.navbarLink}>Log In</Link>
-                </li>
-                <li className={styles.navbarItem}>
+                <li className={styles.navbarItemRight}>
                     <Link href="/signup" className={styles.navbarLink}>Sign Up</Link>
+                </li>
+                <li className={styles.navbarItemRight}>
+                    <Link href="/login" className={styles.navbarLink}>Log In</Link>
                 </li>
             </ul>
         </nav>

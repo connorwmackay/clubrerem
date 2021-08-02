@@ -10,8 +10,16 @@
     color: gray;
 }
 
+.footer {
+    position: fixed;
+    padding-bottom: 1.3rem;
+    bottom: 0;
+    margin-bottom: 0;
+}
+
 .navbarNav {
     list-style-type: none;
+    width: 100%;
     float: left;
     margin: 0;
     padding: 0;
