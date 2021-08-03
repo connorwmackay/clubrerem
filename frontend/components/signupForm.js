@@ -69,10 +69,10 @@ export default function SignUpForm() {
             <input type="email" name="email" id="email" value={email} className={styles.formInput} onChange={handleEmailChange} required/>
 
             <label htmlFor="username" className={styles.formLabel}>Username</label>
-            <input type="text" name="username" id="username" value={username} className={styles.formInput} onChange={handleUsernameChange} required/>
+            <input type="text" name="username" id="username" value={username} className={styles.formInput} onChange={handleUsernameChange} maxLength="255" required/>
 
             <label htmlFor="password" className={styles.formLabel}>Password</label>
-            <input type="password" name="password" id="password" value={password} className={styles.formInput} onChange={handlePasswordChange} required />
+            <input type="password" name="password" id="password" value={password} className={styles.formInput} onChange={handlePasswordChange} minLength="8" maxLength="255" required />
 
             <label htmlFor="passwordCheck" className={styles.formLabel}>Password Check</label>
             <input type="password" name="passwordCheck" id="passwordCheck" value={passwordCheck} className={styles.formInput} onChange={handlePasswordCheckChange} required />

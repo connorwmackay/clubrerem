@@ -2,6 +2,7 @@ import {useState} from "react";
 
 const React = require("react");
 import styles from './form.module.css';
+import cookieCutter from 'cookie-cutter';
 
 export default function LoginForm() {
     const [username, setUsername] = useState('');
@@ -33,7 +34,11 @@ export default function LoginForm() {
             .then(response => response.json())
             .then(data => {
                 setStatus(data.status);
-                console.log("Success: ", data);
+
+                if (data.isValidLogin) {
+                    cookieCutter.set('authKey', data.authKey);
+                    cookieCutter.set('authSalt', data.salt);
+                }
             }).catch((err) => {
             console.error("Error: ", err);
         });
