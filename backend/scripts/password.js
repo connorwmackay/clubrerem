@@ -10,6 +10,13 @@ function hashPassword(password) {
     return [hash.toString(CryptoJS.enc.hex), salt.toString(CryptoJS.enc.hex)];
 }
 
+function hashPasswordWithSalt(password, salt) {
+    let data = password + CryptoJS.enc.Utf8.parse(salt);
+    let hash = CryptoJS.SHA256(data);
+
+    return hash.toString(CryptoJS.enc.hex);
+}
+
 function isPasswordCorrect(password, passwordHash, salt) {
     let data = password + CryptoJS.enc.Utf8.parse(salt);
     let hash = CryptoJS.SHA256(data);
@@ -30,4 +37,4 @@ function getRandomAuthKey() {
 
 const hashDivider = '|%|';
 
-module.exports = { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey};
+module.exports = { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey, hashPasswordWithSalt};

@@ -1,23 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey } = require('../scripts/password');
+const { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey, hashPasswordWithSalt } = require('../scripts/password');
 const db = require('../models/index');
 
 router.post('/me', (req, res) => {
    const authKey = req.body.authKey;
    const salt = req.body.salt;
-   const hash = authKey + hashDivider + salt;
+   const hash = hashPasswordWithSalt(authKey, salt);
+   const hashArr = hash + hashDivider + salt;
 
     db.Auth.findOne({
         where: {
-            key_hash: hash
+            key_hash: hashArr
         }
     }).then(auth => {
         if (auth) {
             const userId = auth.dataValues.user_id;
-            const dbHash = auth.dataValues.authKey.split(hashDivider);
+            const dbHash = auth.dataValues.key_hash.split(hashDivider);
 
-            if (isPasswordCorrect(authKey, dbHash, salt)) {
+            if (isPasswordCorrect(authKey, dbHash[0], salt)) {
                 db.User.findOne({
                     where: {
                         id: userId
