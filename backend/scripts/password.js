@@ -23,6 +23,11 @@ function isPasswordCorrect(password, passwordHash, salt) {
     }
 }
 
+function getRandomAuthKey() {
+    let auth = CryptoJS.lib.WordArray.random(128 / 8);
+    return auth.toString(CryptoJS.enc.hex);
+}
+
 const hashDivider = '|%|';
 
-module.exports = { hashPassword, isPasswordCorrect, hashDivider};
+module.exports = { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey};

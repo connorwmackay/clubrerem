@@ -1,7 +1,49 @@
 const express = require('express');
 const router = express.Router();
-const { hashPassword, isPasswordCorrect, hashDivider } = require('../scripts/password');
+const { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey } = require('../scripts/password');
 const db = require('../models/index');
+
+router.post('/me', (req, res) => {
+   const authKey = req.body.authKey;
+   const salt = req.body.salt;
+   const hash = authKey + hashDivider + salt;
+
+    db.Auth.findOne({
+        where: {
+            key_hash: hash
+        }
+    }).then(auth => {
+        if (auth) {
+            const userId = auth.dataValues.user_id;
+            const dbHash = auth.dataValues.authKey.split(hashDivider);
+
+            if (isPasswordCorrect(authKey, dbHash, salt)) {
+                db.User.findOne({
+                    where: {
+                        id: userId
+                    }
+                }).then((user) => {
+                    if (user) {
+                        res.status(201);
+                        res.json({
+                            isAuthenticated: true,
+                            username: user.dataValues.username
+                        })
+                    } else {
+                        res.status(201);
+                        res.json({isAuthenticated: false});
+                    }
+                });
+            } else {
+                res.status(201);
+                res.json({isAuthenticated: false});
+            }
+        } else {
+            res.status(201);
+            res.json({isAuthenticated: false});
+        }
+    })
+});
 
 router.post('/validate', (req, res) => {
     const username  = req.body.username;
@@ -19,7 +61,25 @@ router.post('/validate', (req, res) => {
 
                 if (isPasswordCorrect(password, hashSplit[0], salt)) {
                     res.status(201);
-                    res.json({isValidLogin: true, status: "Successfully logged in as " + username});
+
+                    const userId = user.dataValues.id;
+                    const authKey = getRandomAuthKey();
+                    const hash = hashPassword(authKey);
+
+                    // Perform an insert into the Auth table.
+                    db.Auth.create({
+                        key_hash: hash[0] + hashDivider + hash[1],
+                        user_id: userId
+                    }).then(() => {
+                        res.json({
+                            isValidLogin: true,
+                            status: "Successfully logged in as " + username,
+                            authKey: authKey,
+                            salt: hash[1],
+                        });
+                    }).catch((err) => {
+                        console.error("Error: ", err);
+                    });
                 } else {
                     res.status(201);
                     res.send({isValidLogin: false, status: "Incorrect login details"});
