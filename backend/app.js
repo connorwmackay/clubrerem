@@ -25,10 +25,12 @@ app.use(compression());
 const User = require('./models/user');
 
 const userRouter = require('./routes/user');
+const roomRouter = require('./routes/room');
 const logoutRouter = require('./routes/logout');
 
 app.use('/user', userRouter);
 app.use('/logout', logoutRouter);
+app.use('/room', roomRouter);
 
 app.listen(3001, () => {
     console.log('Listening on port http://localhost:3001');
