@@ -70,7 +70,6 @@ export default function Navbar() {
                 <li className={styles.navbarItem}>
                     <Link href="/" className={styles.navbarLink}>Club ReRem</Link>
                 </li>
-
                 <li className={styles.navbarItem}>
                     <Link href="/" className={styles.navbarLink}>Home</Link>
                 </li>
