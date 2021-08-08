@@ -1,74 +1,93 @@
 const express = require('express');
 const router = express.Router();
 const { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey, hashPasswordWithSalt } = require('../scripts/password');
-const { isValidMember, isAuthenticatedRetUser} = require('../scripts/auth');
 const db = require('../models/index');
 
 router.post('/create', (req, res) => {
-    // Check isAuthenticated
-    // TODO: Write this route
+    const authKey = req.body.authKey;
+    const salt = req.body.salt;
+    const hash = hashPasswordWithSalt(authKey, salt);
+    const hashArr = hash + hashDivider + salt;
 
-    // randomly generate unique room code...
+    db.Auth.findOne({
+        where: {
+            key_hash: hashArr
+        }
+    }).then(auth => {
+        if (auth) {
+            let userId = auth.dataValues.user_id;
+            const dbHash = auth.dataValues.key_hash.split(hashDivider);
+
+            if (isPasswordCorrect(authKey, dbHash[0], salt)) {
+                db.User.findOne({
+                    where: {
+                        id: userId
+                    }
+                }).then((user) => {
+                    if (user) {
+                        /* Get the Room Code */
+                        let roomCode = getRandomAuthKey();
+
+                        db.Room.findOne({
+                            where: {
+                                code: roomCode
+                            }
+                        }).then(room => {
+                            if (room) {
+                                res.json({isAuthenticated: true, isRoomCreated: true, isAdminAdded: false});
+                            }
+                        }).catch(err => {
+                            console.error(err);
+                            res.json({isAuthenticated: true, isRoomCreated: true, isAdminAdded: false});
+                        });
+
+                        db.Room.create({
+                            name: req.body.roomName,
+                            is_invite_only: req.body.roomIsInviteOnly,
+                            code: roomCode
+                        }).then(room => {
+                            if (room) {
+                                db.RoomMember.create({
+                                    user_id: userId,
+                                    room_id: room.dataValues.id,
+                                    is_admin: true,
+                                    is_moderator: false
+                                }).then(member => {
+                                    if (member) {
+                                        res.json({isAuthenticated: true, isRoomCreated: true, isAdminAdded: true, roomCode: room.dataValues.code});
+                                    } else {
+                                        res.json({isAuthenticated: true, isRoomCreated: true, isAdminAdded: false, roomCode: room.dataValues.code});
+                                    }
+                                }).catch(err => {
+                                    res.json({isAuthenticated: true, isRoomCreated: true, isAdminAdded: false, roomCode: room.dataValues.code});
+                                });
+                            } else {
+                                res.json({isAuthenticated: true, isRoomCreated: true, isAdminAdded: false});
+                            }
+                        }).catch(err => {
+                            console.error(err);
+                            res.json({isAuthenticated: true, isRoomCreated: false, isAdminAdded: false});
+                        });
+
+
+                    } else {
+                        res.json({isAuthenticated: false, isRoomCreated: false, isAdminAdded: false});
+                    }
+                });
+            } else {
+                res.json({isAuthenticated: false, isRoomCreated: false, isAdminAdded: false});
+            }
+        } else {
+            res.json({isAuthenticated: false, isRoomCreated: false, isAdminAdded: false});
+        }
+    }).catch(err => {
+        console.error(err);
+        res.json({isAuthenticated: false, isRoomCreated: false, isAdminAdded: false});
+    });
 });
 
 router.post('/:roomCode/invite', (req, res) => {
-    let authKey = req.body.authKey;
-    let salt = req.body.salt;
-    let username = req.body.username;
-    let authRet = isAuthenticatedRetUser(authKey, salt);
-    let userId = null;
 
-    let isAdmin = false;
-    let isModerator = false;
-
-    if (authRet.isAuth) {
-        db.RoomMember.findOne({
-            where: {
-                id: authRet.userId
-            }
-        }).then(member => {
-            if (member) {
-                isAdmin = member.dataValues.is_admin;
-                isModerator = member.dataValues.is_moderator;
-            }
-        });
-
-        if ((isAdmin) && (isModerator)) {
-            db.User.findOne({
-                where: {
-                    username: username
-                }
-            }).then(user => {
-                if (user != null) {
-                    userId = user.dataValues.id;
-                }
-            });
-
-            db.RoomMember.create({
-                user_id: userId,
-                room_id: req.params.room_id,
-                is_admin: false,
-                is_moderator: false
-            }).then(member => {
-                res.json({
-                    isInvited: true,
-                    username: username
-                });
-            });
-
-            if (userId != null) {
-                res.json({
-                    isInvited: false,
-                    username: ""
-                });
-            }
-        }
-    } else {
-        res.json({
-            isInvited: false,
-            username: ""
-        });
-    }
 });
 
 router.post(':roomCode/settings', (req, res) => {
@@ -89,36 +108,7 @@ router.post('/:roomCode/members', (req, res) => {
 });
 
 router.post('/:roomCode', (req, res) => {
-    const authKey = req.body.authKey;
-    const salt = req.body.salt;
 
-    if (isValidMember(authKey, salt, req.params.roomCode)) {
-        db.Room.findOne({
-            where: {
-                id: req.params.roomCode
-            }
-        }).then(room => {
-            if (room) {
-                res.json({
-                    isAuthenticated: true,
-                    isMember: true,
-                    roomName: room.dataValues.name,
-                    roomCover: room.dataValues.cover_photo_url,
-                    isInviteOnly: room.dataValues.is_invite_only
-                });
-            } else {
-                res.json({
-                    isAuthenticated: false,
-                    isMember: false,
-                });
-            }
-        });
-    } else {
-        res.json({
-            isAuthenticated: false,
-            isMember: false,
-        });
-    }
 });
 
 module.exports = router;

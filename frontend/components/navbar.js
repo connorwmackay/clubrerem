@@ -1,4 +1,5 @@
 const React = require("react");
+const axios = require("axios");
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './navbar.module.css';
@@ -7,56 +8,60 @@ import cookieCutter from 'cookie-cutter';
 export default function Navbar() {
     const [username, setUsername] = useState('username');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [rightNavItems, setRightNavItems] = useState([
-        {link: "/login", name: "Log In"},
-        {link: "/signup", name: "Sign Up"}
-    ]);
 
     function isAuthenticated() {
+
         const auth = {
             authKey: cookieCutter.get('authKey'),
             salt: cookieCutter.get('authSalt')
         };
 
-        if (auth.authKey != '' || auth.authKey != undefined &&
-            auth.salt != '' || auth.authKey != undefined) {
-            fetch('http://localhost:3001/user/me', {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(auth)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data) {
-                    if (data.isAuthenticated == true) {
-                        setIsLoggedIn(true);
-                        setUsername(data.username);
+        axios({
+            method: 'post',
+            url: 'http://localhost:3001/user/me',
+            headers: { 'content-type': 'application/json' },
+            data: JSON.stringify(auth)
+        })
+        .then(response => {
+            let data = response.data;
 
-                        setRightNavItems([
-                            {link: '#', name: username},
-                            {link: '/logout', name: 'Log Out'}
-                        ]);
-                    } else{
-                        setIsLoggedIn(false);
-                        setUsername('');
+            if (data.isAuthenticated) {
+                setIsLoggedIn(true);
+                setUsername(data.username);
+            } else{
+                setIsLoggedIn(false);
+                setUsername('');
+            }
+        }).catch(err => {
+            console.error(err);
+        });
+    }
 
-                        setRightNavItems([
-                            {link: '/login', name: 'Log In'},
-                            {link: '/signup', name: 'Sign Up'}
-                        ]);
-                    }
-                }
-            }).catch(err => {
-                console.error(err);
+    function rightNavComponent() {
+        if (isLoggedIn) {
+            return (
+                <span>
+                    <li className={styles.navbarItemRight}>
+                        <Link href="/logout" className={styles.navbarLink}>Log Out</Link>
+                    </li>
 
-                setRightNavItems([
-                    {link: '/login', name: 'Log In'},
-                    {link: '/signup', name: 'Sign Up'}
-                ]);
-            });
+                    <li className={styles.navbarItemRight}>
+                        <Link href="#" className={styles.navbarLink}><a>{username}</a></Link>
+                    </li>
+                </span>
+            );
+        } else {
+            return (
+                <span>
+                    <li className={styles.navbarItemRight}>
+                        <Link href="/signup" className={styles.navbarLink}>Sign Up</Link>
+                    </li>
+
+                    <li className={styles.navbarItemRight}>
+                        <Link href="/login" className={styles.navbarLink}>Log In</Link>
+                    </li>
+                </span>
+            );
         }
     }
 
@@ -73,13 +78,11 @@ export default function Navbar() {
                 <li className={styles.navbarItem}>
                     <Link href="/" className={styles.navbarLink}>Home</Link>
                 </li>
+                <li className={styles.navbarItem}>
+                    <Link href="/room/create" className={styles.navbarLink}>Create Room</Link>
+                </li>
 
-                <li className={styles.navbarItemRight}>
-                    <Link href={rightNavItems[1].link} className={styles.navbarLink}>{rightNavItems[1].name}</Link>
-                </li>
-                <li className={styles.navbarItemRight}>
-                    <Link href={rightNavItems[0].link} className={styles.navbarLink}>{rightNavItems[0].name}</Link>
-                </li>
+                {rightNavComponent()}
             </ul>
         </nav>
     );
