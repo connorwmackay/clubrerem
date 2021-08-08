@@ -3,12 +3,13 @@ import {useState} from "react";
 const React = require("react");
 const axios = require("axios");
 import styles from './form.module.css';
+import Link from 'next/link';
 import cookieCutter from 'cookie-cutter';
 
 export default function CreateRoomForm() {
     const [roomName, setRoomName] = useState('');
     const [roomIsInviteOnly, setRoomIsInviteOnly] = useState(false);
-    const [status, setStatus] = useState('');
+    const [roomUrl, setRoomUrl] = useState('');
 
     function handleRoomNameChange(event) {
         setRoomName(event.target.value);
@@ -37,14 +38,24 @@ export default function CreateRoomForm() {
             data: JSON.stringify(auth)
         }).then(response => {
             console.log(response.data);
-            setStatus("Created new room at /room/" + response.data.roomCode);
+            setRoomUrl("http://localhost:3000/room/" + response.data.roomCode);
         }).catch(err => {
             console.error(err);
         })
 
-
-
         e.preventDefault();
+    }
+
+    function showCreatedRoom() {
+        if (roomName.length != '') {
+            return (
+                <Link href={roomUrl}>Go to room.</Link>
+            );
+        } else {
+            return (
+                <p></p>
+            );
+        }
     }
 
     return (
@@ -62,7 +73,7 @@ export default function CreateRoomForm() {
 
             <button type="submit" className={styles.formButton}>Create</button>
 
-            <p>{status}</p>
+            {showCreatedRoom()}
         </form>
     );
 }

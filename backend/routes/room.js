@@ -86,6 +86,97 @@ router.post('/create', (req, res) => {
     });
 });
 
+router.post('/:roomCode', (req, res) => {
+    const authKey = req.body.authKey;
+    const salt = req.body.salt;
+    const hash = hashPasswordWithSalt(authKey, salt);
+    const hashArr = hash + hashDivider + salt;
+
+    db.Auth.findOne({
+        where: {
+            key_hash: hashArr
+        }
+    }).then(auth => {
+        if (auth) {
+            const dbHash = auth.dataValues.key_hash.split(hashDivider);
+
+            if (isPasswordCorrect(authKey, dbHash[0], salt)) {
+                db.Room.findOne({
+                    where: {
+                        code: req.params.roomCode
+                    }
+                }).then((room) => {
+                    if (room) {
+                        db.RoomMember.findOne({
+                            where: {
+                                room_id: room.dataValues.id,
+                                user_id: auth.dataValues.user_id
+                            }
+                        }).then(member => {
+                            if (member) {
+                                res.json({
+                                    isAuthenticated: true,
+                                    isValidRoom: true,
+                                    isMember: true,
+                                    roomName: room.dataValues.name,
+                                    coverUrl: room.dataValues.cover_photo_url
+                                });
+                            } else {
+                                res.json({
+                                    isAuthenticated: true,
+                                    isValidRoom: true,
+                                    isMember: false,
+                                });
+                            }
+                        }).catch(err => {
+                            console.error(err);
+
+                            res.json({
+                                isAuthenticated: true,
+                                isValidRoom: true,
+                                isMember: false,
+                            });
+                        });
+                    } else {
+                        res.json({
+                            isAuthenticated: true,
+                            isValidRoom: false,
+                            isMember: false,
+                        });
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    res.json({
+                        isAuthenticated: true,
+                        isValidRoom: false,
+                        isMember: false,
+                    });
+                });
+            } else {
+                res.json({
+                    isAuthenticated: false,
+                    isValidRoom: false,
+                    isMember: false,
+                });
+            }
+        } else {
+            res.json({
+                isAuthenticated: false,
+                isValidRoom: false,
+                isMember: false,
+            });
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        res.json({
+            isAuthenticated: false,
+            isValidRoom: false,
+            isMember: false,
+        });
+    })
+});
+
 router.post('/:roomCode/invite', (req, res) => {
 
 });
@@ -105,10 +196,6 @@ router.post('/:roomCode/comments', (req, res) => {
 
 router.post('/:roomCode/members', (req, res) => {
     // TODO: Write this route
-});
-
-router.post('/:roomCode', (req, res) => {
-
 });
 
 module.exports = router;
