@@ -26,7 +26,6 @@ module.exports = {
             },
             cover_photo_url: {
                 type: Sequelize.STRING,
-                unique: true,
                 notNull: true,
                 defaultValue: '/images/base-cover.png'
             },

@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey, hashPasswordWithSalt } = require('../scripts/password');
 const db = require('../models/index');
-const auth = require('../scripts/auth');
 
 router.post('/me', (req, res) => {
     const authKey = req.body.authKey;

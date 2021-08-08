@@ -10,6 +10,7 @@ export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     function isAuthenticated() {
+
         const auth = {
             authKey: cookieCutter.get('authKey'),
             salt: cookieCutter.get('authSalt')
@@ -34,29 +35,6 @@ export default function Navbar() {
         }).catch(err => {
             console.error(err);
         });
-
-        // fetch('http://localhost:3001/user/me', {
-        //     method: 'POST',
-        //     mode: 'cors',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify(auth)
-        // })
-        // .then(response => response.json())
-        // .then(data => {
-        //     if (data) {
-        //         if (data.isAuthenticated) {
-        //             setIsLoggedIn(true);
-        //             setUsername(data.username);
-        //         } else{
-        //             setIsLoggedIn(false);
-        //             setUsername('');
-        //         }
-        //     }
-        // }).catch(err => {
-        //     console.error(err);
-        // });
     }
 
     function rightNavComponent() {
@@ -99,6 +77,9 @@ export default function Navbar() {
                 </li>
                 <li className={styles.navbarItem}>
                     <Link href="/" className={styles.navbarLink}>Home</Link>
+                </li>
+                <li className={styles.navbarItem}>
+                    <Link href="/room/create" className={styles.navbarLink}>Create Room</Link>
                 </li>
 
                 {rightNavComponent()}

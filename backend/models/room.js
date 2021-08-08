@@ -31,7 +31,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         cover_photo_url: {
             type: DataTypes.STRING,
-            unique: true,
             notNull: true,
             defaultValue: '/images/base-cover.png'
         },
