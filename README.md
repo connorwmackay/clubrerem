@@ -4,7 +4,7 @@ A club on the edge of the internet.
 ![Screenshot](./frontend/public/screenshot.png)
 
 ## About
-This project is a social platform that will be built under the look and feel of a nightclub.<br />
+This project is a social platform. <br />
 [<img src="https://icons.iconarchive.com/icons/papirus-team/papirus-apps/256/trello-icon.png" alt="drawing" width="25" height="25"/> Trello](https://trello.com/b/L4cNPRYd/club-rerem)
 
 ## Running
