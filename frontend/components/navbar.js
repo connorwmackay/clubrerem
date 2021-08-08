@@ -10,31 +10,32 @@ export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     function isAuthenticated() {
-
         const auth = {
             authKey: cookieCutter.get('authKey'),
             salt: cookieCutter.get('authSalt')
         };
 
-        axios({
-            method: 'post',
-            url: 'http://localhost:3001/user/me',
-            headers: { 'content-type': 'application/json' },
-            data: JSON.stringify(auth)
-        })
-        .then(response => {
-            let data = response.data;
+        if (!isLoggedIn) {
+            axios({
+                method: 'post',
+                url: 'http://localhost:3001/user/me',
+                headers: { 'content-type': 'application/json' },
+                data: JSON.stringify(auth)
+            })
+                .then(response => {
+                    let data = response.data;
 
-            if (data.isAuthenticated) {
-                setIsLoggedIn(true);
-                setUsername(data.username);
-            } else{
-                setIsLoggedIn(false);
-                setUsername('');
-            }
-        }).catch(err => {
-            console.error(err);
-        });
+                    if (data.isAuthenticated) {
+                        setIsLoggedIn(true);
+                        setUsername(data.username);
+                    } else{
+                        setIsLoggedIn(false);
+                        setUsername('');
+                    }
+                }).catch(err => {
+                console.error(err);
+            });
+        }
     }
 
     function rightNavComponent() {
