@@ -118,6 +118,8 @@ router.post('/:roomCode', (req, res) => {
                                     isAuthenticated: true,
                                     isValidRoom: true,
                                     isMember: true,
+                                    isAdmin: member.dataValues.is_admin,
+                                    isInviteOnly: room.dataValues.is_invite_only,
                                     roomName: room.dataValues.name,
                                     coverUrl: room.dataValues.cover_photo_url
                                 });
@@ -177,17 +179,12 @@ router.post('/:roomCode', (req, res) => {
     })
 });
 
-router.post('/:roomCode/invite', (req, res) => {
-
-});
-
-router.post(':roomCode/settings', (req, res) => {
-    // Check isAuthenticated
-    // TODO: Write this route
-});
-
 router.post('/:roomCode/bulletins', (req, res) => {
     // TODO: Write this route
+});
+
+router.post('/:roomCode/bulletins/create', (req, res) => {
+
 });
 
 router.post('/:roomCode/comments', (req, res) => {
