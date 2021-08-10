@@ -118,6 +118,8 @@ router.post('/:roomCode', (req, res) => {
                                     isAuthenticated: true,
                                     isValidRoom: true,
                                     isMember: true,
+                                    isAdmin: member.dataValues.is_admin,
+                                    isInviteOnly: room.dataValues.is_invite_only,
                                     roomName: room.dataValues.name,
                                     coverUrl: room.dataValues.cover_photo_url
                                 });
@@ -125,6 +127,8 @@ router.post('/:roomCode', (req, res) => {
                                 res.json({
                                     isAuthenticated: true,
                                     isValidRoom: true,
+                                    roomName: room.dataValues.name,
+                                    isInviteOnly: room.dataValues.is_invite_only,
                                     isMember: false,
                                 });
                             }
@@ -177,17 +181,132 @@ router.post('/:roomCode', (req, res) => {
     })
 });
 
-router.post('/:roomCode/invite', (req, res) => {
+router.post('/:roomCode/settings', (req, res) => {
+    const authKey = req.body.authKey;
+    const salt = req.body.salt;
+    const hash = hashPasswordWithSalt(authKey, salt);
+    const hashArr = hash + hashDivider + salt;
 
-});
+    db.Auth.findOne({
+        where: {
+            key_hash: hashArr
+        }
+    }).then(auth => {
+        if (auth) {
+            let userId = auth.dataValues.user_id;
+            const dbHash = auth.dataValues.key_hash.split(hashDivider);
 
-router.post(':roomCode/settings', (req, res) => {
-    // Check isAuthenticated
-    // TODO: Write this route
+            if (isPasswordCorrect(authKey, dbHash[0], salt)) {
+                db.User.findOne({
+                    where: {
+                        id: userId
+                    }
+                }).then((user) => {
+                    if (user) {
+                        db.Room.findOne({
+                            where: {
+                                code: req.params.roomCode
+                            }
+                        }).then(room => {
+                            if (room) {
+                                db.RoomMember.findOne({
+                                    where: {
+                                        user_id: user.dataValues.id,
+                                        room_id: room.dataValues.id
+                                    }
+                                }).then(member => {
+                                    if (member) {
+                                        if (member.dataValues.is_admin) {
+                                            if (req.body.roomName != undefined || req.body.roomName != '' &&
+                                                req.body.isInviteOnly != undefined) {
+                                                db.Room.update({name: req.body.roomName, is_invite_only: req.body.isInviteOnly}, {
+                                                    where: {
+                                                        id: room.dataValues.id
+                                                    }
+                                                }).then(updatedRoom => {
+                                                    if (updatedRoom) {
+                                                        res.status(201);
+                                                        res.json({
+                                                            isAuthenticated: true,
+                                                            isValidRoom: true,
+                                                            isAdmin: true,
+                                                            isSettingsUpdated: true,
+                                                            roomName: updatedRoom.dataValues.name,
+                                                            roomIsInviteOnly: updatedRoom.dataValues.is_invite_only
+                                                        });
+                                                    } else {
+                                                        res.status(201);
+                                                        res.json({
+                                                            isAuthenticated: true,
+                                                            isValidRoom: true,
+                                                            isAdmin: true,
+                                                            isSettingsUpdated: false
+                                                        });
+                                                    }
+                                                    
+                                                }).catch(err => {
+                                                    console.log(err);
+                                                    res.status(500);
+                                                    res.json({
+                                                        isAuthenticated: true,
+                                                        isValidRoom: true,
+                                                        isAdmin: true,
+                                                        isSettingsUpdated: false
+                                                    });
+                                                })
+                                            }
+                                        } else {
+                                            res.status(201);
+                                            res.json({
+                                                isAuthenticated: true,
+                                                isValidRoom: false,
+                                                isAdmin: false
+                                            });
+                                        }
+                                    } else {
+                                        res.status(201);
+                                        res.json({
+                                            isAuthenticated: false,
+                                            isValidRoom: false,
+                                            isAdmin: false
+                                        });
+                                    }
+                                }).catch(err => {
+                                    console.error(err);
+                                });
+                            } else {
+                                res.status(201);
+                                res.json({
+                                    isAuthenticated: true,
+                                    isValidRoom: false
+                                });
+                            }
+                        }).catch(err => {
+                            console.error(err);
+                            res.status(500);
+                            res.json({
+                                isAuthenticated: true,
+                                isValidRoom: false
+                            });
+                        });
+                    } else {
+                        res.status(201);
+                        res.json({
+                            isAuthenticated: false
+                        });
+                    }
+                });
+            }
+        }
+    });
 });
 
 router.post('/:roomCode/bulletins', (req, res) => {
     // TODO: Write this route
+});
+
+router.post('/:roomCode/bulletins/create', (req, res) => {
+
 });
 
 router.post('/:roomCode/comments', (req, res) => {

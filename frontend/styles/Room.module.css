@@ -13,11 +13,13 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
+    display: flex;
+    justify-content: space-between;
 }
 
 .roomMenuItem {
     font-size: 1rem;
-    width: 33%;
+    flex: 1 1 auto;
     padding-top: 2%;
     padding-bottom: 2%;
     background-color: black;
@@ -27,7 +29,7 @@
 
 .roomMenuItemSelected {
     font-size: 1rem;
-    width: 33%;
+    flex: 1 1 auto;
     padding-top: 2%;
     padding-bottom: 2%;
     background-color: black;
