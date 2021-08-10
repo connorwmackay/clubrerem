@@ -26,8 +26,10 @@ export default function Room() {
     });
     const [ selectedRoomMenuItem, setSelectedRoomMenuItem] = useState('bulletin');
     const [ isAdmin, setIsAdmin ] = useState(false);
-    const [ isInviteOnly, setIsInviteOnly] = useState(false);
-    const [ isInviteOnlySelect, setIsInviteOnlySelect] = useState('inviteOnly');
+    const [ isInviteOnly, setIsInviteOnly] = useState(true);
+
+    const [ roomNameSettings, setRoomNameSettings ] = useState(roomName);
+    const [ roomIsInviteOnlySettings, setRoomIsInviteOnlySettings ] = useState(roomName);
 
     function checkIfValidRoom() {
         let data = {
@@ -48,7 +50,11 @@ export default function Room() {
                     setIsValidRoom(true);
                     setRoomName(response.data.roomName);
                     setRoomCoverUrl(response.data.coverUrl);
-                    setIsInviteOnly(response.data.isInviteOnly);
+                    if (response.data.isInviteOnly) {
+                        setIsInviteOnly(true);
+                    } else {
+                        setIsInviteOnly(false);
+                    }
 
                     if (response.data.isMember) {
                         setIsValidMember(true);
@@ -76,12 +82,34 @@ export default function Room() {
 
     function handleRoomIsInviteOnlyChange(event) {
         if (event.target.value == "inviteOnly") {
-            setIsInviteOnly(true);
-            setIsInviteOnlySelect('inviteOnly');
+            setRoomIsInviteOnlySettings(true);
         } else {
-            setIsInviteOnly(false);
-            setIsInviteOnlySelect('anyone');
+            setRoomIsInviteOnlySettings(false);
         }
+    }
+
+    function handleRoomNameSettings(e) {
+        setRoomNameSettings(e.target.value);
+    }
+
+    function handleSettingsSubmit(e) {
+        const data = {
+            authKey: cookieCutter.get('authKey'),
+            salt: cookieCutter.get('authSalt'),
+            roomName: roomNameSettings,
+            isInviteOnly: roomIsInviteOnlySettings
+        };
+
+        axios({
+            method:'POST',
+            url: `http://localhost:3001/room/${roomCode}/settings`,
+            headers: {'content-type': 'application/json'},
+            data: JSON.stringify(data)
+        }).then(response => {
+            console.log(response.data);
+        })
+
+        e.preventDefault();
     }
 
     function switchSelectedMenuItem(e) {
@@ -153,14 +181,14 @@ export default function Room() {
             return (
                 <div>
                     <h1 className={styles.pageTitle}>Settings</h1>
-                    <form method="POST" className={formStyles.compForm}>
-                        <label for="roomNameSetting" className={formStyles.formLabel}>Room Name</label>
-                        <input type="text" id="roomNameSetting" placeholder={roomName} className={formStyles.formInput}/>
-                        <label for="roomNameSetting" className={formStyles.formLabel}>Room Description</label>
+                    <form method="POST" className={formStyles.compForm} onSubmit={handleSettingsSubmit}>
+                        <label htmlFor="roomNameSetting" className={formStyles.formLabel}>Room Name</label>
+                        <input type="text" id="roomNameSetting" placeholder={roomName} className={formStyles.formInput} onChange={handleRoomNameSettings} />
+                        <label htmlFor="roomNameSetting" className={formStyles.formLabel}>Room Description</label>
                         <input type="text" id="roomNameSetting" placeholder="Welcome to our room!" className={formStyles.formInput}/>
 
                         <label htmlFor="roomIsInviteOnly" className={styles.formLabel}>Room Status</label>
-                        <select className={formStyles.formInput} onChange={handleRoomIsInviteOnlyChange} value={isInviteOnlySelect}>
+                        <select className={formStyles.formInput} onChange={handleRoomIsInviteOnlyChange}>
                             <option value="anyone">Anyone can Join</option>
                             <option value="inviteOnly">Invite Only</option>
                         </select>
@@ -205,12 +233,27 @@ export default function Room() {
                 }
             } else { // Not a member
                 // TODO: Add a join button if room is public.
-                return (
-                    <div>
-                        <h1 className={styles.pageTitle}>Not a Member</h1>
-                        <p className={styles.pageDescription}>You are not a member of this room</p>
-                    </div>
-                );
+                if (!isInviteOnly) {
+                    return (
+                        <div>
+                            <h1 className={styles.pageTitle}>{roomName}</h1>
+                            <p className={styles.pageDescription}>You are not a member of this room</p>
+                            <form method="POST" className={formStyles.compForm}>
+                                <button type="submit" className={formStyles.formButton}>Join</button>
+                            </form>
+                        </div>
+                    );
+                } else {
+                    return (
+                        <div>
+                            <h1 className={styles.pageTitle}>{roomName}</h1>
+                            <p className={styles.pageDescription}>You are not a member of this room</p>
+                            <form method="POST" className={formStyles.compForm}>
+                                <button type="submit" className={formStyles.formButton}>Request to Join</button>
+                            </form>
+                        </div>
+                    );
+                }
             }
         } else {
             return (
