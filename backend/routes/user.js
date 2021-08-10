@@ -109,6 +109,7 @@ router.post('/create', (req, res) => {
     if (username != null && email != null && password != null) {
         const hashArray = hashPassword(password);
         const passwordSalt = hashArray[0] + hashDivider + hashArray[1];
+        
         db.User.create({username: username, email: email, password_hash: passwordSalt}).then(() => {
             res.status(201);
             res.json({isSuccessful: true, username: username, status: "Created new user '" + username + "'"});

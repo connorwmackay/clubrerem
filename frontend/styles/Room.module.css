@@ -1,0 +1,37 @@
+
+.pageTitle {
+    text-align: center;
+}
+
+.pageDescription {
+    text-align: center;
+}
+
+.roomMenu {
+    margin-top: 1rem;
+    width: 50rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.roomMenuItem {
+    font-size: 1rem;
+    width: 33%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    background-color: black;
+    color: white;
+    border: none;
+}
+
+.roomMenuItemSelected {
+    font-size: 1rem;
+    width: 33%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    background-color: black;
+    border: none;
+    border-bottom: 0.3rem solid gray;
+    color: white;
+}
