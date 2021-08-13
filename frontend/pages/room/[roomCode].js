@@ -31,12 +31,17 @@ export default function Room() {
     const [ roomNameSettings, setRoomNameSettings ] = useState(roomName);
     const [ roomIsInviteOnlySettings, setRoomIsInviteOnlySettings ] = useState(roomName);
 
+    const [ inviteeUsername, setInviteeUsername ] = useState('');
+    const [ inviteeStatus, setInviteeStatus ] = useState('');
+
     function checkIfValidRoom() {
         let data = {
             authKey: cookieCutter.get('authKey'),
             salt: cookieCutter.get('authSalt'),
             roomCode: roomCode
         };
+
+        console.log(data);
 
         if (!isValidRoom) {
             axios({
@@ -112,6 +117,33 @@ export default function Room() {
         e.preventDefault();
     }
 
+    function handleMemberInvite(e) {
+        const data = {
+            authKey: cookieCutter.get('authKey'),
+            salt: cookieCutter.get('authSalt'),
+            inviteeUsername: inviteeUsername
+        };
+
+        axios({
+            method:'POST',
+            url: `http://localhost:3001/room/${roomCode}/members/invite`,
+            headers: {'content-type': 'application/json'},
+            data: JSON.stringify(data)
+        }).then(response => {
+            console.log(response.data);
+
+            if (response.data.isInvited) {
+                setInviteeStatus("Invited user ", inviteeUsername);
+            }
+        })
+        
+        e.preventDefault();
+    }
+
+    function handleInviteeUsername(e) {
+        setInviteeUsername(e.target.value);
+    }
+
     function switchSelectedMenuItem(e) {
         if (e.target.id == 'menuItemBulletin') {
             setSelectedRoomMenuItem('bulletin')
@@ -164,9 +196,11 @@ export default function Room() {
                 return (
                     <div>
                         <h1 className={styles.pageTitle}>Members</h1>
-                        <form className={formStyles.compForm} method="POST" autoComplete="off">
-                            <input type="text" id="usernameInvite" placeholder="Username" className={formStyles.formInput}/>
+                        <form className={formStyles.compForm} method="POST" autoComplete="off" onSubmit={handleMemberInvite}>
+                            <input type="text" id="usernameInvite" placeholder="Username" className={formStyles.formInput} onChange={handleInviteeUsername} />
                             <button type="submit" className={formStyles.formButton}>Invite</button>
+
+                            <p className={formStyles.formLabel}>{inviteeStatus}</p>
                         </form>
                     </div>
                 );

@@ -115,8 +115,12 @@ router.post('/create', async(req, res) => {
 });
 
 router.post('/:roomCode', async(req, res) => {
+    console.log('=================\n\ Body: ', req.body, '\n\n=========');
     const authKey = req.body.authKey;
     const salt = req.body.salt;
+
+    console.log('=================\n\ Auth Key: ', authKey, '\n\n=========');
+    console.log('=================\n\n Salt: ', salt, '\n\n=========');
 
     let authentication;
     await authenticate(authKey, salt)
@@ -280,8 +284,94 @@ router.post('/:roomCode/comments', (req, res) => {
     // TODO: Write this route
 });
 
-router.post('/:roomCode/members', (req, res) => {
-    // TODO: Write this route
+router.post('/:roomCode/members/invite', async(req, res) => {
+    const authKey = req.body.authKey;
+    const salt = req.body.salt;
+
+    let authentication;
+    await authenticate(authKey, salt)
+    .then(auth => authentication = auth)
+    .catch(err => {
+        console.error(err);
+        authentication = {
+            isAuthenticated: false,
+            userId: -1
+        };
+    });
+
+    let response = {
+        isAuthenticated: false,
+        isValidRoom: false,
+        isAdmin: false,
+        isInvited: false,
+        inviteeUsername: ''
+    };
+
+    if (authentication.isAuthenticated) {
+        response.isAuthenticated = true;
+        
+        let roomRecord;
+        await findOneRoom({code: req.params.roomCode})
+        .then(room => roomRecord = room.dataValues)
+        .catch(err => {
+            console.error(err);
+            roomRecord = {};
+        });
+
+        if (roomRecord != {}) {
+            response.isValidRoom = true;
+
+            let roomMemberRecord;
+            await findOneRoomMember({user_id: authentication.userId, room_id: roomRecord.id})
+            .then(roomMember => roomMemberRecord = roomMember.dataValues)
+            .catch(err => {
+                console.error(err);
+                roomMemberRecord = {};
+            });
+
+            if (roomMemberRecord != {}) {
+                if (roomMemberRecord.is_admin) {
+                    response.isAdmin = true;
+
+                    let userRecord;
+                    await findOneUser({username: req.body.inviteeUsername})
+                    .then(user => userRecord = user.dataValues)
+                    .catch(err => {
+                        console.error(err);
+                        userRecord = {};
+                    });
+
+                    if (userRecord != {}) {
+                        let roomInviteeMemberRecord;
+                        await createRoomMember({
+                            user_id: userRecord.id, 
+                            room_id: roomRecord.id,
+                            is_admin: false,
+                            is_moderator: false
+                        })
+                        .then(roomMember => roomInviteeMemberRecord = roomMember.dataValues)
+                        .catch(err => {
+                            console.error(err);
+                            roomInviteeMemberRecord = {};
+                        });
+
+                        if (roomInviteeMemberRecord != {}) {
+                            response.isInvited = true,
+                            response.inviteeUsername = userRecord.username
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    res.json({
+        isAuthenticated: response.isAuthenticated,
+        isValidRoom: response.isValidRoom,
+        isAdmin: response.isAdmin,
+        isInvited: response.isInvited,
+        inviteeUsername: response.inviteeUsername
+    });
 });
 
 module.exports = router;
