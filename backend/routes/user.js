@@ -23,7 +23,6 @@ router.post('/me', async(req, res) => {
         authRecord = {};
     });
 
-    console.log(authRecord);
     if (authRecord != {}) {
         dbHash = authRecord.key_hash.split(hashDivider);
     }
@@ -75,8 +74,6 @@ router.post('/validate', async(req, res) => {
             userRecord = {};
         });
 
-        console.log("=============================\n\n\n User Record: ", userRecord, "\n\n========================\n\n");
-
         if (userRecord != {}) {
             const hashSplit = userRecord.password_hash.split(hashDivider);
             const salt = hashSplit[1];
@@ -103,8 +100,6 @@ router.post('/validate', async(req, res) => {
             }
         }
     }
-
-    console.log("==========================\n\nResponse: ", response, "\n============================\n\n");
 
     res.json({
         isValidLogin: response.isValidLogin,
@@ -146,7 +141,6 @@ router.post('/create', async(req, res) => {
                 userRecord = {};
             });
 
-            console.log(userRecord);
 
             if (userRecord != {}) {
                 response.isSuccessful = true;
@@ -162,7 +156,6 @@ router.post('/create', async(req, res) => {
         response.status = "Details not sufficient to create user";
     }
 
-    console.log(response);
     res.json({
         isSuccessful: response.isSuccessful,
         status: response.status,

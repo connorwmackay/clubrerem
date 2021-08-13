@@ -72,4 +72,90 @@ async function createAuth(recordData) {
     return await authPromise;
 }
 
-module.exports = { findOneUser, createUser, findOneAuth, createAuth };
+/**
+ * Queries the Room table for the first record with the whereQuery data.
+ * @param whereQuery an object with data from a potential record in the Room table
+ * @returns the room record from the Room table as an object.
+ */ 
+ async function findOneRoom(whereQuery) {
+    let roomPromise = await db.Room.findOne({where: whereQuery})
+    .then(roomRecord => {
+        if (roomRecord != null) {
+            return roomRecord;
+        } else {
+            return {};
+        }
+    });
+
+    return await roomPromise;
+}
+
+/**
+ * Creates a new record in the Room table based on the recordData.
+ * @param data The data for the new record in the Room table.
+ * @returns The new room record from the Room table as an object.
+ */ 
+async function createRoom(recordData) {
+    let roomPromise = await db.Room.create(recordData)
+    .then(roomRecord => {
+        if (roomRecord != null) {
+            return roomRecord;
+        } else {
+            return {};
+        }
+    });
+
+    return await roomPromise;
+}
+
+/**
+ * Updates a record in the Room table based on the recordData.
+ * @param data The data for the new record in the Room table.
+ * @param whereQuery an object with data from a potential record in the Room table
+ * @returns The new room record from the Room table as an object.
+ */ 
+ async function updateRoom(recordData, whereQuery) {
+    let roomPromise = await db.Room.update(recordData, {where: whereQuery})
+    .then(roomRecord => {
+        if (roomRecord != null) {
+            return roomRecord;
+        } else {
+            return {};
+        }
+    });
+
+    return await roomPromise;
+}
+
+async function findOneRoomMember(whereQuery) {
+    let roomMemberPromise = await db.RoomMember.findOne({where: whereQuery})
+    .then(roomMemberRecord => {
+        if (roomMemberRecord != null) {
+            return roomMemberRecord;
+        } else {
+            return {};
+        }
+    });
+
+    return await roomMemberPromise;
+}
+
+/**
+ * Creates a new record in the Room table based on the recordData.
+ * @param data The data for the new record in the Room table.
+ * @returns The new room record from the Room table as an object.
+ */ 
+async function createRoomMember(recordData) {
+    let roomMemberPromise = await db.RoomMember.create(recordData)
+    .then(roomMemberRecord => {
+        if (roomRecord != null) {
+            return roomMemberRecord;
+        } else {
+            return {};
+        }
+    });
+
+    return await roomMemberPromise;
+}
+
+module.exports = { findOneUser, createUser, findOneAuth, createAuth, findOneRoom, createRoom, updateRoom, findOneRoomMember, createRoomMember };

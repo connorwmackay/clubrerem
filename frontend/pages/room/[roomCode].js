@@ -188,7 +188,7 @@ export default function Room() {
                         <input type="text" id="roomNameSetting" placeholder="Welcome to our room!" className={formStyles.formInput}/>
 
                         <label htmlFor="roomIsInviteOnly" className={styles.formLabel}>Room Status</label>
-                        <select className={formStyles.formInput} onChange={handleRoomIsInviteOnlyChange}>
+                        <select className={formStyles.formInput} onChange={handleRoomIsInviteOnlyChange} value="inviteOnly">
                             <option value="anyone">Anyone can Join</option>
                             <option value="inviteOnly">Invite Only</option>
                         </select>
