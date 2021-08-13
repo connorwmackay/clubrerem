@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey, hashPasswordWithSalt } = require('../scripts/password');
-const  { findOneUser, createUser, findOneAuth, createAuth, findOneRoom, createRoom, updateRoom, findOneRoomMember, createRoomMember } = require('../orm');
+const  { findOneUser, createUser, findOneAuth, createAuth, findOneRoom, findAllRooms, createRoom, updateRoom, findOneRoomMember, findAllRoomMembers, createRoomMember } = require('../orm');
 
 async function authenticate(authKey, salt) {
     let authentication = {
@@ -111,6 +111,66 @@ router.post('/create', async(req, res) => {
         isRoomCreated: response.isRoomCreated,
         isAdminAdded: response.isAdminAdded,
         roomCode: response.roomCode
+    });
+});
+
+router.post('/list-my', async(req, res) => {
+    console.log("ACCESSED LIST MY");
+
+    const authKey = req.body.authKey;
+    const salt = req.body.salt;
+
+    let authentication;
+    await authenticate(authKey, salt)
+    .then(auth => authentication = auth)
+    .catch(err => {
+        console.error(err);
+        authentication = {
+            isAuthenticated: false,
+            userId: -1
+        };
+    });
+
+    let response = {
+        isAuthenticated: false,
+        rooms: [],
+    };
+
+    if (authentication.isAuthenticated) {
+        response.isAuthenticated = true;
+    
+        let roomMemberRecords;
+        await findAllRoomMembers({user_id: authentication.userId})
+        .then(roomMembers => roomMemberRecords = roomMembers)
+        .catch(err => {
+            console.error(err);
+            roomMemberRecords = {};
+        });
+
+        for (i=0; i < roomMemberRecords.length; i++) {
+            let member = roomMemberRecords[i];
+
+            let roomRecord;
+            await findOneRoom({id: member.dataValues.room_id})
+            .then(room => roomRecord = room.dataValues)
+            .catch(err => {
+                console.error(err);
+                roomRecord = {};
+            });
+
+            console.log(roomRecord);
+
+            if (roomRecord != {}) {
+                response.rooms.push(roomRecord);
+            }
+        }
+    }
+
+    console.log("RESPONSE: ", response);
+
+    res.json({
+        isAuthenticated: response.isAuthenticated,
+        rooms: response.rooms,
     });
 });
 
@@ -272,15 +332,15 @@ router.post('/:roomCode/settings', async(req, res) => {
     });
 });
 
-router.post('/:roomCode/bulletins', (req, res) => {
+router.post('/:roomCode/bulletins', async(req, res) => {
     // TODO: Write this route
 });
 
-router.post('/:roomCode/bulletins/create', (req, res) => {
+router.post('/:roomCode/bulletins/create', async(req, res) => {
 
 });
 
-router.post('/:roomCode/comments', (req, res) => {
+router.post('/:roomCode/comments', async(req, res) => {
     // TODO: Write this route
 });
 

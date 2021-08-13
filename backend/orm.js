@@ -91,6 +91,24 @@ async function createAuth(recordData) {
 }
 
 /**
+ * Queries the Room table for all records with the whereQuery data.
+ * @param whereQuery an object with data from a potential record in the Room table
+ * @returns the room records from the Room table as an object.
+ */ 
+ async function findAllRooms(whereQuery) {
+    let roomPromise = await db.Room.findAll({where: whereQuery})
+    .then(roomRecord => {
+        if (roomRecord != null) {
+            return roomRecord;
+        } else {
+            return {};
+        }
+    });
+
+    return await roomPromise;
+}
+
+/**
  * Creates a new record in the Room table based on the recordData.
  * @param data The data for the new record in the Room table.
  * @returns The new room record from the Room table as an object.
@@ -140,6 +158,19 @@ async function findOneRoomMember(whereQuery) {
     return await roomMemberPromise;
 }
 
+async function findAllRoomMembers(whereQuery) {
+    let roomMemberPromise = await db.RoomMember.findAll({where: whereQuery})
+    .then(roomMemberRecord => {
+        if (roomMemberRecord != null) {
+            return roomMemberRecord;
+        } else {
+            return {};
+        }
+    });
+
+    return await roomMemberPromise;
+}
+
 /**
  * Creates a new record in the Room table based on the recordData.
  * @param data The data for the new record in the Room table.
@@ -158,4 +189,4 @@ async function createRoomMember(recordData) {
     return await roomMemberPromise;
 }
 
-module.exports = { findOneUser, createUser, findOneAuth, createAuth, findOneRoom, createRoom, updateRoom, findOneRoomMember, createRoomMember };
+module.exports = { findOneUser, createUser, findOneAuth, createAuth, findOneRoom, findAllRooms, createRoom, updateRoom, findOneRoomMember,findAllRoomMembers, createRoomMember };
