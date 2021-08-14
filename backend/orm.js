@@ -15,7 +15,7 @@ async function findOneUser(whereQuery) {
         }
     });
 
-    return await userPromise;
+    return userPromise;
 }
 
 /**
@@ -33,7 +33,7 @@ async function createUser(recordData) {
         }
     });
 
-    return await userPromise;
+    return userPromise;
 }
 
 /**
@@ -51,7 +51,7 @@ async function findOneAuth(whereQuery) {
         }
     });
 
-    return await authPromise;
+    return authPromise;
 }
 
 /**
@@ -69,7 +69,7 @@ async function createAuth(recordData) {
         }
     });
 
-    return await authPromise;
+    return authPromise;
 }
 
 /**
@@ -87,7 +87,7 @@ async function createAuth(recordData) {
         }
     });
 
-    return await roomPromise;
+    return roomPromise;
 }
 
 /**
@@ -105,7 +105,7 @@ async function createAuth(recordData) {
         }
     });
 
-    return await roomPromise;
+    return roomPromise;
 }
 
 /**
@@ -123,7 +123,7 @@ async function createRoom(recordData) {
         }
     });
 
-    return await roomPromise;
+    return roomPromise;
 }
 
 /**
@@ -142,7 +142,7 @@ async function createRoom(recordData) {
         }
     });
 
-    return await roomPromise;
+    return roomPromise;
 }
 
 async function findOneRoomMember(whereQuery) {
@@ -155,7 +155,7 @@ async function findOneRoomMember(whereQuery) {
         }
     });
 
-    return await roomMemberPromise;
+    return roomMemberPromise;
 }
 
 async function findAllRoomMembers(whereQuery) {
@@ -168,7 +168,7 @@ async function findAllRoomMembers(whereQuery) {
         }
     });
 
-    return await roomMemberPromise;
+    return roomMemberPromise;
 }
 
 /**
@@ -179,14 +179,14 @@ async function findAllRoomMembers(whereQuery) {
 async function createRoomMember(recordData) {
     let roomMemberPromise = await db.RoomMember.create(recordData)
     .then(roomMemberRecord => {
-        if (roomRecord != null) {
+        if (roomMemberRecord != null) {
             return roomMemberRecord;
         } else {
             return {};
         }
     });
 
-    return await roomMemberPromise;
+    return roomMemberPromise;
 }
 
 module.exports = { findOneUser, createUser, findOneAuth, createAuth, findOneRoom, findAllRooms, createRoom, updateRoom, findOneRoomMember,findAllRoomMembers, createRoomMember };

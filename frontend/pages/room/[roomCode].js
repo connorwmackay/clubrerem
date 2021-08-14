@@ -2,6 +2,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../styles/Room.module.css';
 import formStyles from '../../components/form.module.css';
+import myRoomsStyle from '../../styles/MyRooms.module.css';
 import { useRouter } from 'next/router';
 
 import Navbar from '../../components/navbar';
@@ -33,6 +34,11 @@ export default function Room() {
 
     const [ inviteeUsername, setInviteeUsername ] = useState('');
     const [ inviteeStatus, setInviteeStatus ] = useState('');
+
+    const [ membersListIndex, setMembersListIndex ] = useState(0);
+    const [ membersList, setMembersList ] = useState([]);
+    const [isMembersListUpdateRequested, setIsMembersListUpdateRequested] = useState(true);
+    const [ isEndOfMembersList, setIsEndOfMembersList ] = useState(false);
 
     function checkIfValidRoom() {
         let data = {
@@ -81,8 +87,36 @@ export default function Room() {
         }
     }
 
+    function fetchMembers() {
+        if (isMembersListUpdateRequested) {
+            let data = {
+                authKey: cookieCutter.get('authKey'),
+                salt: cookieCutter.get('authSalt'),
+                minMemberIndex: membersListIndex
+            };
+
+            axios({
+                method: 'post',
+                url: `http://localhost:3001/room/${roomCode}/members/list`,
+                headers: {'content-type': 'application/json'},
+                data: JSON.stringify(data)
+            }).then(response => {
+                if (response.data.isAuthenticated && response.data.isValidRoom && response.data.isMember) {
+                    setMembersList(response.data.members);
+                    setIsEndOfMembersList(response.data.isEndOfList);
+                }
+
+                setIsMembersListUpdateRequested(false);
+            }).catch(err => {
+                console.error(err);
+            })
+        }
+    }
+
+
     useEffect(() => {
         checkIfValidRoom();
+        fetchMembers();
     });
 
     function handleRoomIsInviteOnlyChange(event) {
@@ -130,8 +164,6 @@ export default function Room() {
             headers: {'content-type': 'application/json'},
             data: JSON.stringify(data)
         }).then(response => {
-            console.log(response.data);
-
             if (response.data.isInvited) {
                 setInviteeStatus("Invited user ", inviteeUsername);
             }
@@ -160,6 +192,7 @@ export default function Room() {
                 roomMenuItems['settings'].current.className = styles.roomMenuItem;
             }
         } else if (e.target.id == 'menuItemMembers') {
+            setIsMembersListUpdateRequested(true);
             setSelectedRoomMenuItem('members')
             roomMenuItems['comments'].current.className = styles.roomMenuItem;
             roomMenuItems['bulletin'].current.className = styles.roomMenuItem;
@@ -176,6 +209,61 @@ export default function Room() {
         }
 
         e.target.className = styles.roomMenuItemSelected;
+    }
+
+    function ListMembers() {
+
+        function membersListPrev() {
+            if (membersListIndex > 25) {
+                setMembersListIndex(membersListIndex - 25);
+                setIsMembersListUpdateRequested(true);
+            }
+        }
+
+        function membersListNext() {
+            setMembersListIndex(membersListIndex + 25);
+            setIsMembersListUpdateRequested(true);
+        }
+
+        const listMembersElement = membersList.map((member) =>
+            <li key={member.id} className={myRoomsStyle.listItem}>
+                {member.username}
+            </li>
+        );
+
+        if (membersListIndex == 0) {
+            return (
+                <div className={formStyles.compForm}>
+                    <ul className={myRoomsStyle.list}>
+                        {listMembersElement}
+                    </ul>
+                </div>
+            );
+        } else {
+            if (isEndOfMembersList) {
+                return (
+                    <div className={formStyles.compForm}>
+                        <ul>
+                            {listMembersElement}
+                        </ul>
+                        <button onClick={membersListPrev}>Prev</button>
+                    </div>
+                );
+            } else {
+                return (
+                    <div className={formStyles.compForm}>
+                        <ul>
+                            {listMembersElement}
+                        </ul>
+                        <button onClick={membersListPrev}>Prev</button>
+                        <button onClick={membersListNext}>Next</button>
+                    </div>
+                );
+            }
+        }
+
+
+
     }
 
     function getTab() {
@@ -202,12 +290,14 @@ export default function Room() {
 
                             <p className={formStyles.formLabel}>{inviteeStatus}</p>
                         </form>
+                        { ListMembers() }
                     </div>
                 );
             } else {
                 return (
                     <div>
                         <h1 className={styles.pageTitle}>Members</h1>
+                        { ListMembers() }
                     </div>
                 );
             }

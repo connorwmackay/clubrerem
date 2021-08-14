@@ -6,42 +6,55 @@ const { findOneUser, createUser, findOneAuth, createAuth } = require('../orm');
 router.post('/me', async(req, res) => {
     const authKey = req.body.authKey;
     const salt = req.body.salt;
-    const hash = hashPasswordWithSalt(authKey, salt);
-    const hashArr = hash + hashDivider + salt;
 
     // Default resonse return values.
     let isAuthenticated = false;
     let username = "";
 
-    let dbHash = [];
-
-    let authRecord;
-    await findOneAuth({key_hash: hashArr})
-    .then(auth => authRecord = auth.dataValues)
-    .catch(err => {
-        console.error(err);
-        authRecord = {};
-    });
-
-    if (authRecord != {}) {
-        dbHash = authRecord.key_hash.split(hashDivider);
+    function isDefined(variable) {
+        if (variable == undefined || variable == '' || variable == null || variable == 'undefined') {
+            return false;
+        } else {
+            return true;
+        }
     }
 
-    if (isPasswordCorrect(authKey, dbHash[0], salt)) {
-        const userId = authRecord.user_id;
-        
-        let userRecord;
-        await findOneUser({ id: userId })
-        .then(user => userRecord = user.dataValues)
-        .catch(err => {
-            console.error(err);
-        });
+    if (!isDefined(authKey) || !isDefined(salt)) {
 
-        if (userRecord != {}) {
-            username = userRecord.username;
+    } else {
+        const hash = hashPasswordWithSalt(authKey, salt);
+        const hashArr = hash + hashDivider + salt;
+
+        let dbHash = [];
+
+        let authRecord;
+        await findOneAuth({key_hash: hashArr})
+            .then(auth => authRecord = auth.dataValues)
+            .catch(err => {
+                console.error(err);
+                authRecord = {};
+            });
+
+        if (authRecord != {}) {
+            dbHash = authRecord.key_hash.split(hashDivider);
         }
-        
-        isAuthenticated = true;
+
+        if (isPasswordCorrect(authKey, dbHash[0], salt)) {
+            const userId = authRecord.user_id;
+
+            let userRecord;
+            await findOneUser({ id: userId })
+                .then(user => userRecord = user.dataValues)
+                .catch(err => {
+                    console.error(err);
+                });
+
+            if (userRecord != {}) {
+                username = userRecord.username;
+            }
+
+            isAuthenticated = true;
+        }
     }
 
     res.status(201);

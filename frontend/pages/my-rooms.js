@@ -43,7 +43,7 @@ export default function MyRooms() {
 
     function ListRooms() {
         const listRooms = rooms.map((room) =>
-            <li className={styles.listItem}>
+            <li className={styles.listItem} key={room.id}>
                 <Link href={"http://localhost:3000/room/" + room.code}> 
                     {room.name}
                 </Link>

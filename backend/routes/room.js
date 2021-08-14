@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey, hashPasswordWithSalt } = require('../scripts/password');
 const  { findOneUser, createUser, findOneAuth, createAuth, findOneRoom, findAllRooms, createRoom, updateRoom, findOneRoomMember, findAllRoomMembers, createRoomMember } = require('../orm');
+const { Op } = require("sequelize");
 
 async function authenticate(authKey, salt) {
     let authentication = {
@@ -115,7 +116,6 @@ router.post('/create', async(req, res) => {
 });
 
 router.post('/list-my', async(req, res) => {
-    console.log("ACCESSED LIST MY");
 
     const authKey = req.body.authKey;
     const salt = req.body.salt;
@@ -158,15 +158,20 @@ router.post('/list-my', async(req, res) => {
                 roomRecord = {};
             });
 
-            console.log(roomRecord);
-
+            let isDuplicate = false;
             if (roomRecord != {}) {
-                response.rooms.push(roomRecord);
+                response.rooms.forEach(room => {
+                    if (roomRecord.id == room.id) {
+                        isDuplicate = true;
+                    }
+                });
+
+                if (!isDuplicate) {
+                    response.rooms.push(roomRecord);
+                }
             }
         }
     }
-
-    console.log("RESPONSE: ", response);
 
     res.json({
         isAuthenticated: response.isAuthenticated,
@@ -175,12 +180,8 @@ router.post('/list-my', async(req, res) => {
 });
 
 router.post('/:roomCode', async(req, res) => {
-    console.log('=================\n\ Body: ', req.body, '\n\n=========');
     const authKey = req.body.authKey;
     const salt = req.body.salt;
-
-    console.log('=================\n\ Auth Key: ', authKey, '\n\n=========');
-    console.log('=================\n\n Salt: ', salt, '\n\n=========');
 
     let authentication;
     await authenticate(authKey, salt)
@@ -342,6 +343,111 @@ router.post('/:roomCode/bulletins/create', async(req, res) => {
 
 router.post('/:roomCode/comments', async(req, res) => {
     // TODO: Write this route
+});
+
+router.post('/:roomCode/members/list', async(req, res) => {
+    const authKey = req.body.authKey;
+    const salt = req.body.salt;
+
+    let authentication;
+    await authenticate(authKey, salt)
+    .then(auth => authentication = auth)
+    .catch(err => {
+        console.error(err);
+        authentication = {
+            isAuthenticated: false,
+            userId: -1
+        };
+    });
+
+    let response = {
+        isAuthenticated: false,
+        isValidRoom: false,
+        isMember: false,
+        members: [],
+        isEndOfList: false
+    };
+
+    if (authentication.isAuthenticated) {
+        response.isAuthenticated = true;
+
+        let roomRecord;
+        await findOneRoom({code: req.params.roomCode})
+        .then(room => roomRecord = room.dataValues)
+        .catch(err => {
+            console.error(err);
+            roomRecord = {};
+        });
+
+        if (roomRecord != {}) {
+            response.isValidRoom = true;
+
+            let memberRecord;
+            await findOneRoomMember({room_id: roomRecord.id, user_id: authentication.userId})
+                .then(member => memberRecord = member.dataValues)
+                .catch(err => {
+                    console.error(err);
+                    memberRecord = {};
+                });
+
+            if (memberRecord != {}) {
+                response.isMember = true;
+
+                let memberRecords;
+                let min = req.body.minMemberIndex; // BODY
+                let max = req.body.minMemberIndex + 24;
+                await findAllRoomMembers({
+                    room_id: roomRecord.id
+                })
+                .then(members => memberRecords = members)
+                .catch(err => {
+                    console.error(err);
+                    memberRecords = {};
+                });
+
+                if (memberRecords != []) {
+                    if (memberRecords.length < max) {
+                        max = memberRecords.length-1;
+                        response.isEndOfList = true;
+                    }
+
+                    for (i=min; i <= max; i++) {
+                        let userRecord;
+                        await findOneUser({id: memberRecords[i].dataValues.user_id})
+                        .then(user => userRecord = user.dataValues)
+                        .catch(err => {
+                            console.error(err);
+                            userRecord = {};
+                        });
+
+                        let isDuplicateUser = false;
+                        response.members.forEach(member => {
+                            if (member != null) {
+                                if (member.id == memberRecords[i].dataValues.user_id) {
+                                    isDuplicateUser = true;
+                                }
+                            }
+                        });
+
+                        if (userRecord != {} && !isDuplicateUser) {
+                            response.members.push(userRecord);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    console.log(response);
+
+    res.json({
+        isAuthenticated: response.isAuthenticated,
+        isValidRoom: response.isValidRoom,
+        isMember: response.isMember,
+        members: response.members,
+        isEndOfList: response.isEndOfList
+    });
 });
 
 router.post('/:roomCode/members/invite', async(req, res) => {
