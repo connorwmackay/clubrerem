@@ -2,6 +2,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../styles/Room.module.css';
 import formStyles from '../../components/form.module.css';
+import myRoomsStyle from '../../styles/MyRooms.module.css';
 import { useRouter } from 'next/router';
 
 import Navbar from '../../components/navbar';
@@ -31,12 +32,22 @@ export default function Room() {
     const [ roomNameSettings, setRoomNameSettings ] = useState(roomName);
     const [ roomIsInviteOnlySettings, setRoomIsInviteOnlySettings ] = useState(roomName);
 
+    const [ inviteeUsername, setInviteeUsername ] = useState('');
+    const [ inviteeStatus, setInviteeStatus ] = useState('');
+
+    const [ membersListIndex, setMembersListIndex ] = useState(0);
+    const [ membersList, setMembersList ] = useState([]);
+    const [isMembersListUpdateRequested, setIsMembersListUpdateRequested] = useState(true);
+    const [ isEndOfMembersList, setIsEndOfMembersList ] = useState(false);
+
     function checkIfValidRoom() {
         let data = {
             authKey: cookieCutter.get('authKey'),
             salt: cookieCutter.get('authSalt'),
             roomCode: roomCode
         };
+
+        console.log(data);
 
         if (!isValidRoom) {
             axios({
@@ -76,8 +87,36 @@ export default function Room() {
         }
     }
 
+    function fetchMembers() {
+        if (isMembersListUpdateRequested) {
+            let data = {
+                authKey: cookieCutter.get('authKey'),
+                salt: cookieCutter.get('authSalt'),
+                minMemberIndex: membersListIndex
+            };
+
+            axios({
+                method: 'post',
+                url: `http://localhost:3001/room/${roomCode}/members/list`,
+                headers: {'content-type': 'application/json'},
+                data: JSON.stringify(data)
+            }).then(response => {
+                if (response.data.isAuthenticated && response.data.isValidRoom && response.data.isMember) {
+                    setMembersList(response.data.members);
+                    setIsEndOfMembersList(response.data.isEndOfList);
+                }
+
+                setIsMembersListUpdateRequested(false);
+            }).catch(err => {
+                console.error(err);
+            })
+        }
+    }
+
+
     useEffect(() => {
         checkIfValidRoom();
+        fetchMembers();
     });
 
     function handleRoomIsInviteOnlyChange(event) {
@@ -112,6 +151,31 @@ export default function Room() {
         e.preventDefault();
     }
 
+    function handleMemberInvite(e) {
+        const data = {
+            authKey: cookieCutter.get('authKey'),
+            salt: cookieCutter.get('authSalt'),
+            inviteeUsername: inviteeUsername
+        };
+
+        axios({
+            method:'POST',
+            url: `http://localhost:3001/room/${roomCode}/members/invite`,
+            headers: {'content-type': 'application/json'},
+            data: JSON.stringify(data)
+        }).then(response => {
+            if (response.data.isInvited) {
+                setInviteeStatus("Invited user ", inviteeUsername);
+            }
+        })
+        
+        e.preventDefault();
+    }
+
+    function handleInviteeUsername(e) {
+        setInviteeUsername(e.target.value);
+    }
+
     function switchSelectedMenuItem(e) {
         if (e.target.id == 'menuItemBulletin') {
             setSelectedRoomMenuItem('bulletin')
@@ -128,6 +192,7 @@ export default function Room() {
                 roomMenuItems['settings'].current.className = styles.roomMenuItem;
             }
         } else if (e.target.id == 'menuItemMembers') {
+            setIsMembersListUpdateRequested(true);
             setSelectedRoomMenuItem('members')
             roomMenuItems['comments'].current.className = styles.roomMenuItem;
             roomMenuItems['bulletin'].current.className = styles.roomMenuItem;
@@ -144,6 +209,61 @@ export default function Room() {
         }
 
         e.target.className = styles.roomMenuItemSelected;
+    }
+
+    function ListMembers() {
+
+        function membersListPrev() {
+            if (membersListIndex > 25) {
+                setMembersListIndex(membersListIndex - 25);
+                setIsMembersListUpdateRequested(true);
+            }
+        }
+
+        function membersListNext() {
+            setMembersListIndex(membersListIndex + 25);
+            setIsMembersListUpdateRequested(true);
+        }
+
+        const listMembersElement = membersList.map((member) =>
+            <li key={member.id} className={myRoomsStyle.listItem}>
+                {member.username}
+            </li>
+        );
+
+        if (membersListIndex == 0) {
+            return (
+                <div className={formStyles.compForm}>
+                    <ul className={myRoomsStyle.list}>
+                        {listMembersElement}
+                    </ul>
+                </div>
+            );
+        } else {
+            if (isEndOfMembersList) {
+                return (
+                    <div className={formStyles.compForm}>
+                        <ul>
+                            {listMembersElement}
+                        </ul>
+                        <button onClick={membersListPrev}>Prev</button>
+                    </div>
+                );
+            } else {
+                return (
+                    <div className={formStyles.compForm}>
+                        <ul>
+                            {listMembersElement}
+                        </ul>
+                        <button onClick={membersListPrev}>Prev</button>
+                        <button onClick={membersListNext}>Next</button>
+                    </div>
+                );
+            }
+        }
+
+
+
     }
 
     function getTab() {
@@ -164,16 +284,20 @@ export default function Room() {
                 return (
                     <div>
                         <h1 className={styles.pageTitle}>Members</h1>
-                        <form className={formStyles.compForm} method="POST" autoComplete="off">
-                            <input type="text" id="usernameInvite" placeholder="Username" className={formStyles.formInput}/>
+                        <form className={formStyles.compForm} method="POST" autoComplete="off" onSubmit={handleMemberInvite}>
+                            <input type="text" id="usernameInvite" placeholder="Username" className={formStyles.formInput} onChange={handleInviteeUsername} />
                             <button type="submit" className={formStyles.formButton}>Invite</button>
+
+                            <p className={formStyles.formLabel}>{inviteeStatus}</p>
                         </form>
+                        { ListMembers() }
                     </div>
                 );
             } else {
                 return (
                     <div>
                         <h1 className={styles.pageTitle}>Members</h1>
+                        { ListMembers() }
                     </div>
                 );
             }
@@ -188,7 +312,7 @@ export default function Room() {
                         <input type="text" id="roomNameSetting" placeholder="Welcome to our room!" className={formStyles.formInput}/>
 
                         <label htmlFor="roomIsInviteOnly" className={styles.formLabel}>Room Status</label>
-                        <select className={formStyles.formInput} onChange={handleRoomIsInviteOnlyChange}>
+                        <select className={formStyles.formInput} onChange={handleRoomIsInviteOnlyChange} value="inviteOnly">
                             <option value="anyone">Anyone can Join</option>
                             <option value="inviteOnly">Invite Only</option>
                         </select>

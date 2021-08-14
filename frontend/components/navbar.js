@@ -80,7 +80,7 @@ export default function Navbar() {
                     <Link href="/" className={styles.navbarLink}>Home</Link>
                 </li>
                 <li className={styles.navbarItem}>
-                    <Link href="/room/create" className={styles.navbarLink}>Create Room</Link>
+                    <Link href="/my-rooms" className={styles.navbarLink}>My Rooms</Link>
                 </li>
 
                 {rightNavComponent()}

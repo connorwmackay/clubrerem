@@ -1,131 +1,179 @@
 const express = require('express');
 const router = express.Router();
 const { hashPassword, isPasswordCorrect, hashDivider, getRandomAuthKey, hashPasswordWithSalt } = require('../scripts/password');
-const db = require('../models/index');
+const { findOneUser, createUser, findOneAuth, createAuth } = require('../orm');
 
-router.post('/me', (req, res) => {
+router.post('/me', async(req, res) => {
     const authKey = req.body.authKey;
     const salt = req.body.salt;
-    const hash = hashPasswordWithSalt(authKey, salt);
-    const hashArr = hash + hashDivider + salt;
 
-    db.Auth.findOne({
-         where: {
-             key_hash: hashArr
-         }
-     }).then(auth => {
-         if (auth) {
-             const userId = auth.dataValues.user_id;
-             const dbHash = auth.dataValues.key_hash.split(hashDivider);
+    // Default resonse return values.
+    let isAuthenticated = false;
+    let username = "";
 
-             if (isPasswordCorrect(authKey, dbHash[0], salt)) {
-                db.User.findOne({
-                    where: {
-                        id: userId
-                    }
-                }).then((user) => {
-                    if (user) {
-                        res.status(201);
-                        res.json({
-                            isAuthenticated: true,
-                            username: user.dataValues.username
-                        })
-                    } else {
-                        res.status(201);
-                        res.json({isAuthenticated: false});
-                    }
-                });
-            } else {
-                res.status(201);
-                res.json({isAuthenticated: false});
-            }
+    function isDefined(variable) {
+        if (variable == undefined || variable == '' || variable == null || variable == 'undefined') {
+            return false;
         } else {
-            res.status(201);
-            res.json({isAuthenticated: false});
+            return true;
         }
-    })
+    }
+
+    if (!isDefined(authKey) || !isDefined(salt)) {
+
+    } else {
+        const hash = hashPasswordWithSalt(authKey, salt);
+        const hashArr = hash + hashDivider + salt;
+
+        let dbHash = [];
+
+        let authRecord;
+        await findOneAuth({key_hash: hashArr})
+            .then(auth => authRecord = auth.dataValues)
+            .catch(err => {
+                console.error(err);
+                authRecord = {};
+            });
+
+        if (authRecord != {}) {
+            dbHash = authRecord.key_hash.split(hashDivider);
+        }
+
+        if (isPasswordCorrect(authKey, dbHash[0], salt)) {
+            const userId = authRecord.user_id;
+
+            let userRecord;
+            await findOneUser({ id: userId })
+                .then(user => userRecord = user.dataValues)
+                .catch(err => {
+                    console.error(err);
+                });
+
+            if (userRecord != {}) {
+                username = userRecord.username;
+            }
+
+            isAuthenticated = true;
+        }
+    }
+
+    res.status(201);
+    res.json({
+        isAuthenticated: isAuthenticated,
+        username: username
+    });
 });
 
-router.post('/validate', (req, res) => {
+router.post('/validate', async(req, res) => {
     const username  = req.body.username;
     const password  = req.body.password;
 
-    if (username != null && password != null) {
-        db.User.findOne({
-            where: {
-            username: username
-            }
-        }).then(user => {
-            if (user) {
-                const hashSplit = user.dataValues.password_hash.split(hashDivider);
-                const salt = hashSplit[1];
+    // Default response values
+    let response = {
+        isValidLogin: false,
+        status: "Incorrect login details",
+        authKey: "",
+        salt: ""
+    };
 
-                if (isPasswordCorrect(password, hashSplit[0], salt)) {
-                    res.status(201);
+    if (username != "" || username != null &&
+        password != "" || password != null) {
 
-                    const userId = user.dataValues.id;
-                    const authKey = getRandomAuthKey();
-                    const hash = hashPassword(authKey);
-
-                    // Perform an insert into the Auth table.
-                    db.Auth.create({
-                        key_hash: hash[0] + hashDivider + hash[1],
-                        user_id: userId
-                    }).then(() => {
-                        res.json({
-                            isValidLogin: true,
-                            status: "Successfully logged in as " + username,
-                            authKey: authKey,
-                            salt: hash[1],
-                        });
-                    }).catch((err) => {
-                        console.error("Error: ", err);
-                    });
-                } else {
-                    res.status(201);
-                    res.send({isValidLogin: false, status: "Incorrect login details"});
-                }
-            } else {
-                res.status(201);
-                res.json({isValidLogin: false, status: "Incorrect login details"});
-            }
-
-        }).catch((err) => {
-            console.log(err);
-            res.status(500);
-            res.json({isValidLogin: false, status: "Incorrect login details"});
+        let userRecord;
+        await findOneUser({ username: username })
+        .then(user => userRecord = user.dataValues)
+        .catch(err => {
+            console.error(err);
+            userRecord = {};
         });
-    } else {
-        res.status(201);
-        res.json({isValidLogin: false, status: "Incorrect login details"});
+
+        if (userRecord != {}) {
+            const hashSplit = userRecord.password_hash.split(hashDivider);
+            const salt = hashSplit[1];
+
+            if (isPasswordCorrect(password, hashSplit[0], salt)) {
+                const userId = userRecord.id;
+                const authKey = getRandomAuthKey();
+                const authHash = hashPassword(authKey);
+
+                let authRecord;
+                await createAuth({key_hash: authHash[0] + hashDivider + authHash[1], user_id: userId})
+                .then(auth => authRecord = auth.dataValues)
+                .catch(err => {
+                    console.error(err);
+                    authRecord = {};
+                });
+
+                if (authRecord != {}) {
+                    response.isValidLogin = true;
+                    response.status = `Successfully logged in as ${username}`;
+                    response.authKey = authKey;
+                    response.salt = authHash[1];
+                }
+            }
+        }
     }
+
+    res.json({
+        isValidLogin: response.isValidLogin,
+        status: response.status,
+        authKey: response.authKey,
+        salt: response.salt,
+    });
 });
 
-router.post('/create', (req, res) => {
+router.post('/create', async(req, res) => {
     const username  = req.body.username;
     const email = req.body.email_addr;
     const password = req.body.password;
+
+    let response = {
+        isSuccessful: false,
+        status: "",
+        username: ""
+    };
 
     if (username != null && email != null && password != null) {
         const hashArray = hashPassword(password);
         const passwordSalt = hashArray[0] + hashDivider + hashArray[1];
         
-        db.User.create({username: username, email: email, password_hash: passwordSalt}).then(() => {
-            res.status(201);
-            res.json({isSuccessful: true, username: username, status: "Created new user '" + username + "'"});
-        }).catch((err) =>{
-            console.log("Could not create user: ", err);
-            res.status(500);
-            res.json({isSuccessful: false, status: "Could not create user"});
+        let userExistsRecord;
+        await findOneUser({ username: username })
+        .then(user => userExistsRecord = user.dataValues)
+        .catch(err => {
+            console.error(err);
+            userExistsRecord == {};
         });
-      } else {
-        res.status(500);
-        res.json({isSuccessful: false, status: "Details not sufficient to create user"});
-      }
-});
 
-router.get('/:username', (req, res) => {
-    res.json({});
+        if (userExistsRecord != {}) {
+            let userRecord;
+            await createUser({username: username, email: email, password_hash: passwordSalt})
+            .then(user => userRecord = user.dataValues)
+            .catch(err => {
+                console.error(err);
+                userRecord = {};
+            });
+
+
+            if (userRecord != {}) {
+                response.isSuccessful = true;
+                response.status = `Created new user ${username}`;
+                response.username = username;
+            } else {
+                response.status = "Could not create username";
+            }
+        } else {
+            response.status = "User already exists";
+        }
+    } else {
+        response.status = "Details not sufficient to create user";
+    }
+
+    res.json({
+        isSuccessful: response.isSuccessful,
+        status: response.status,
+        username: response.username
+    });
 });
 
 module.exports = router;

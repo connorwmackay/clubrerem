@@ -19,6 +19,8 @@ services:
             context: ./frontend
             dockerfile: Dockerfile
         command: npm run dev
+        environment:
+            - BACKEND_URL=http://localhost:3001
         volumes:
             - ./frontend:/usr/src/app/frontend
         depends_on:
