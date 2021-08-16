@@ -1,7 +1,8 @@
 # clubrerem
 A club on the edge of the internet.
 
-![Screenshot](./frontend/public/screenshot.png)
+## Note
+This repo is no longer maintained, as the project is being completely rewritten.
 
 ## About
 This project is a social platform. <br />
